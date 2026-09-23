@@ -1,24 +1,184 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Life Simulator</title>
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Life Simulator — Dynasty</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#10111a;color:#f4f4f7;font-family:system-ui,sans-serif}.wrap{max-width:1050px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}h1{margin:4px 0}.sub{color:#aaa}.card{background:#191b28;border:1px solid #2b2e40;border-radius:18px;padding:18px;margin-top:16px}.grid{display:grid;grid-template-columns:1.4fr .8fr;gap:16px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat{background:#222535;padding:10px;border-radius:12px}.bar{height:7px;background:#36394b;border-radius:9px;margin-top:5px;overflow:hidden}.fill{height:100%;background:#8b73ff}.age{font-size:44px;font-weight:900}.money{font-size:25px;font-weight:800}button,input,select{font:inherit}button{border:0;border-radius:11px;padding:11px 14px;background:#795cff;color:white;font-weight:700;cursor:pointer}.ghost{background:#292c3d}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}input,select{width:100%;padding:11px;background:#11131d;color:white;border:1px solid #36394b;border-radius:10px;margin:5px 0}.event{font-size:17px;line-height:1.45}.choice{display:block;width:100%;text-align:left;margin-top:8px;background:#25283a}.people{display:grid;gap:8px}.person{display:flex;justify-content:space-between;background:#242737;padding:9px;border-radius:9px}.log{max-height:240px;overflow:auto;font-size:14px}.log div{padding:6px 0;border-bottom:1px solid #292c3c}.hidden{display:none}.ending{text-align:center;padding:35px}@media(max-width:750px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
-</style></head><body><div class="wrap">
-<div class="top"><div><h1>👤 LIFE SIMULATOR</h1><div class="sub">проживи жизнь от 18 лет до старости</div></div><button class="ghost" onclick="location.reload()">Новая жизнь</button></div>
-<section id="create" class="card"><h2>Создание персонажа</h2><input id="name" placeholder="Имя персонажа"><select id="trait"><option value="smart">🧠 Умный</option><option value="social">✨ Общительный</option><option value="hard">💪 Трудолюбивый</option><option value="lucky">🍀 Везучий</option><option value="creative">🎨 Творческий</option></select><input id="dream" placeholder="Мечта"><button onclick="start()">Начать жизнь</button></section>
-<section id="game" class="hidden"><div class="grid"><main><div class="card"><div class="sub">возраст</div><div class="age" id="age"></div><div class="stats"><div class="stat">❤️ Здоровье<div id="health"></div></div><div class="stat">😊 Счастье<div id="happy"></div></div><div class="stat">⚡ Энергия<div id="energy"></div></div><div class="stat">⭐ Навык<div id="skill"></div></div></div><div class="money">💶 <span id="money"></span></div><div class="sub">Работа: <span id="job"></span></div><div class="sub">Мечта: <span id="dreamShow"></span></div></div>
-<div class="card"><div class="sub">Событие года</div><div class="event" id="event"></div><div id="choices"></div><div class="actions"><button onclick="advance()">⏩ Прожить год</button><button class="ghost" onclick="study()">📚 Учиться</button><button class="ghost" onclick="work()">💼 Подработать</button><button class="ghost" onclick="relax()">🛋️ Отдохнуть</button></div></div></main>
-<aside><div class="card"><h3>💞 Отношения</h3><div class="people" id="people"></div></div><div class="card"><h3>📜 История</h3><div class="log" id="log"></div></div></aside></div></section></div>
+*{box-sizing:border-box}body{margin:0;background:#0e1018;color:#f4f5fa;font-family:system-ui,-apple-system,sans-serif}
+.wrap{max-width:1150px;margin:auto;padding:16px}.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+h1,h2,h3{margin:5px 0 12px}.muted{color:#a9adbf}.grid{display:grid;grid-template-columns:1.35fr .85fr;gap:14px}
+.card{background:#181b27;border:1px solid #2b2f42;border-radius:18px;padding:16px;margin-top:14px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat{background:#222637;padding:10px;border-radius:12px}
+.bar{height:7px;background:#363a4d;border-radius:8px;overflow:hidden;margin-top:5px}.fill{height:100%;background:#8068ff}
+.age{font-size:46px;font-weight:900}.money{font-size:26px;font-weight:800}
+button,input,select{font:inherit}button{border:0;border-radius:11px;padding:10px 13px;background:#795cff;color:#fff;font-weight:750;cursor:pointer}
+button.secondary{background:#292d3e}button.danger{background:#c84562}button:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.actions button{flex:1;min-width:125px}
+input,select{width:100%;padding:11px;background:#10121b;color:#fff;border:1px solid #383c51;border-radius:10px;margin:5px 0}
+.event{font-size:17px;line-height:1.45}.choice{display:block;width:100%;text-align:left;margin-top:8px;background:#25293a}
+.person{display:flex;justify-content:space-between;gap:8px;background:#222637;border-radius:10px;padding:9px;margin:6px 0}
+.log{max-height:250px;overflow:auto;font-size:14px}.log div{padding:6px 0;border-bottom:1px solid #292d3d}
+.tree{overflow:auto;padding:8px}.node{display:inline-block;background:#25293a;border-radius:12px;padding:9px;margin:5px;min-width:105px;text-align:center}
+.tabs{display:flex;gap:7px;overflow:auto}.tab{white-space:nowrap}.hidden{display:none}.ending{text-align:center;padding:35px}
+.small{font-size:13px}.pill{display:inline-block;background:#292d3e;border-radius:99px;padding:4px 8px;margin:2px}
+@media(max-width:780px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.wrap{padding:10px}}
+</style></head>
+<body><div class="wrap">
+<div class="top"><div><h1>👤 LIFE SIMULATOR</h1><div class="muted">жизнь → семья → поколения → династия</div></div><button class="secondary" onclick="resetGame()">Новая династия</button></div>
+
+<section id="create" class="card">
+<h2>🌱 Создание персонажа</h2>
+<input id="name" placeholder="Имя">
+<select id="trait"><option value="smart">🧠 Умный</option><option value="social">✨ Общительный</option><option value="hard">💪 Трудолюбивый</option><option value="creative">🎨 Творческий</option><option value="lucky">🍀 Везучий</option></select>
+<input id="dream" placeholder="Главная мечта">
+<button onclick="start()">Начать жизнь</button>
+</section>
+
+<section id="game" class="hidden">
+<div class="tabs">
+<button class="tab" onclick="showTab('life')">❤️ Жизнь</button>
+<button class="tab secondary" onclick="showTab('family')">👨‍👩‍👧 Семья</button>
+<button class="tab secondary" onclick="showTab('tree')">🌳 Дерево</button>
+<button class="tab secondary" onclick="showTab('assets')">🏠 Имущество</button>
+</div>
+
+<div id="life" class="tabpage">
+<div class="grid">
+<main>
+<div class="card"><div class="muted">сейчас играет</div><h2 id="who"></h2><div class="age" id="age"></div>
+<div class="stats"><div class="stat">❤️ Здоровье<div id="health"></div></div><div class="stat">😊 Счастье<div id="happy"></div></div><div class="stat">⚡ Энергия<div id="energy"></div></div><div class="stat">⭐ Навык<div id="skill"></div></div></div>
+<div class="money">💶 <span id="money"></span></div><div class="muted">💼 <span id="job"></span> · 🏠 <span id="home"></span></div><div class="muted">🎯 Мечта: <span id="dreamShow"></span></div></div>
+
+<div class="card"><div class="muted">Событие</div><div class="event" id="event"></div><div id="choices"></div>
+<div class="actions"><button onclick="nextYear()">⏩ Прожить год</button><button class="secondary" onclick="study()">📚 Учиться</button><button class="secondary" onclick="work()">💼 Работать</button><button class="secondary" onclick="rest()">🛋️ Отдохнуть</button></div></div>
+
+<div class="card"><h3>📜 История</h3><div class="log" id="log"></div></div>
+</main>
+<aside>
+<div class="card"><h3>💞 Близкие</h3><div id="relations"></div></div>
+<div class="card"><h3>🏆 Династия</h3><div id="dynasty"></div></div>
+</aside>
+</div></div>
+
+<div id="family" class="tabpage hidden"><div class="card"><h2>👨‍👩‍👧 Семья</h2><div id="familyList"></div><button onclick="dateAction()">❤️ Познакомиться</button><button class="secondary" onclick="childAction()">👶 Попробовать завести ребёнка</button></div></div>
+
+<div id="tree" class="tabpage hidden"><div class="card"><h2>🌳 Семейное дерево</h2><div class="tree" id="treeView"></div></div></div>
+
+<div id="assets" class="tabpage hidden"><div class="card"><h2>🏠 Имущество и деньги</h2><div id="assetsView"></div><div class="actions"><button onclick="buyHome()">🏠 Купить жильё</button><button onclick="buyCar()">🚗 Купить машину</button><button onclick="business()">🏪 Открыть бизнес</button></div></div></div>
+</section>
+</div>
+
 <script>
-let p=null,used=false;const peopleNames=["Алекс","Мия","Лео","Софи","Ника","Макс","Эли","Дан"];
-const events=[["💼 Тебе предложили новую работу.",["Принять — больше денег","Отказаться — больше свободного времени"]],["❤️ Ты познакомился с интересным человеком.",["Начать отношения","Остаться друзьями"]],["🎓 Можно поступить в университет.",["Поступить — -500€","Не поступать"]],["🏠 Ты нашёл красивую квартиру.",["Снять — -350€","Остаться где живёшь"]],["🎨 Хобби начало приносить деньги.",["Развивать — +навык","Продать идею — +600€"]],["🚗 Сломалась важная вещь.",["Заплатить 300€","Сэкономить и чинить самому"]],["✈️ Появилась возможность путешествовать.",["Поехать — -450€","Остаться дома"]],["🎉 Тебя пригласили на вечеринку.",["Пойти","Пропустить"]]];
-function start(){p={name:name.value.trim()||"Алекс",age:18,money:800,health:82,happy:72,energy:88,skill:28,job:"Без работы",dream:dream.value.trim()||"Найти своё место в жизни",trait:trait.value,partner:null,friends:[],log:["18 лет — 🌱 Началась новая жизнь."]};create.classList.add("hidden");game.classList.remove("hidden");render();nextEvent()}
-function bar(v){return Math.round(v)+'<div class="bar"><div class="fill" style="width:'+Math.max(0,Math.min(100,v))+'%"></div></div>'}
-function render(){age.textContent=p.age;money.textContent=Math.round(p.money);job.textContent=p.job;dreamShow.textContent=p.dream;health.innerHTML=bar(p.health);happy.innerHTML=bar(p.happy);energy.innerHTML=bar(p.energy);skill.innerHTML=bar(p.skill);people.innerHTML=(p.partner?'<div class="person">❤️ '+p.partner+'<span>партнёр</span></div>':'')||'<div class="sub">пока никого</div>';log.innerHTML=p.log.slice().reverse().map(x=>'<div>'+x+'</div>').join('')}
-function add(x){p.log.push(p.age+' лет — '+x)}
-function nextEvent(){used=false;let e=events[Math.floor(Math.random()*events.length)];event.textContent=e[0];choices.innerHTML=e[1].map((x,i)=>'<button class="choice" onclick="choose('+i+')">'+x+'</button>').join('')}
-function choose(i){if(used)return;used=true;choices.innerHTML='';if(i===0){p.money+=300;p.happy+=3;p.energy-=8;add('✨ Выбрал перемены.')}else{p.happy+=5;p.energy+=5;add('🌿 Выбрал спокойный путь.')}render()}
-function study(){p.money-=60;p.skill+=8;p.energy-=12;p.happy-=2;add('📚 Учился и развивал навыки.');render()}
-function work(){let g=80+Math.floor(p.skill*2);p.money+=g;p.energy-=18;p.happy-=5;p.skill+=2;add('💼 Подработал и заработал '+g+'€.');render()}
-function relax(){p.energy+=15;p.happy+=9;p.health+=2;add('🛋️ Хорошо отдохнул.');render()}
-function advance(){if(p.age>=90||p.health<=0)return end();p.age++;p.energy-=7;p.health-=2;if(p.job==="Без работы"&&p.age>=20){p.job=p.trait==="smart"?"Программист":p.trait==="creative"?"Дизайнер":p.trait==="social"?"Менеджер":"Специалист";p.money+=700;add('🎓 Начал карьеру: '+p.job+'.')}else if(p.job!=="Без работы")p.money+=Math.round(500+p.skill*5);if(p.age===25&&!p.partner&&Math.random()<.65){p.partner=peopleNames[Math.floor(Math.random()*peopleNames.length)];add('❤️ Начались отношения с '+p.partner+'.')}if(p.age===35&&p.partner){p.money-=900;add('🏠 Переехал в собственное жильё.')}if(Math.random()<.3){p.happy+=8;add('🍀 Случилось что-то приятное.')}render();if(p.age>=90||p.health<=0)end();else nextEvent()}
-function end(){game.innerHTML='<div class="card ending"><div style="font-size:60px">🌅</div><h1>'+p.name+' — конец жизни</h1><p>Возраст: <b>'+p.age+'</b></p><p>Накопления: <b>'+Math.round(p.money)+'€</b></p><p>Навык: <b>'+Math.round(p.skill)+'</b> · Счастье: <b>'+Math.round(p.happy)+'</b></p><p>Мечта: <b>'+p.dream+'</b></p><button onclick="location.reload()">Начать новую жизнь</button></div>'}
+let S=null, used=false, saveKey="life_dynasty_v1";
+const randomNames=["Алекс","Мия","Лео","Софи","Ника","Макс","Эли","Дан","Лука","Лина","Марк","Алиса","Рэй","Эмма"];
+const jobs={smart:["Программист",1100],social:["Менеджер",950],hard:["Инженер",1050],creative:["Дизайнер",900],lucky:["Предприниматель",1200]};
+const events=[
+["💼 Компания предлагает повышение.",["Принять","Отказаться"]],
+["✈️ Возможность путешествовать.",["Поехать — 450€","Остаться дома"]],
+["🎨 Твоё хобби стало популярным.",["Развивать — +навык","Продать идею — +600€"]],
+["🚗 Машина сломалась.",["Потратить 300€","Обойтись без неё"]],
+["🎓 Появился шанс получить новое образование.",["Учиться — 500€","Не сейчас"]],
+["🎉 Друзья устроили праздник.",["Пойти","Остаться дома"]],
+["💰 Ты получил неожиданный подарок.",["Принять","Отдать часть на благотворительность"]],
+["🏠 Появилась квартира мечты.",["Купить","Пока не покупать"]]
+];
+
+function start(){
+ const n=document.getElementById("name").value.trim()||"Алекс";
+ S={generation:1,current:null,people:[],logs:[],nextId:1,totalDeaths:0,assets:{home:"Родительский дом",car:false,business:false},dynastyMoney:0};
+ const id=newPerson(n,18,null);
+ S.current=id;save();document.getElementById("create").classList.add("hidden");document.getElementById("game").classList.remove("hidden");render();nextEvent();
+}
+function newPerson(name,age,parent,extra={}){
+ const t=extra.trait||document.getElementById("trait").value||"smart";
+ const p={id:S.nextId++,name,age,trait:t,job:"Без работы",money:800,health:82,happy:72,energy:88,skill:28,dream:extra.dream||"Найти своё место в жизни",partner:null,children:[],parents:parent?[parent]:[],alive:true,married:false,home:"Родительский дом",car:false,business:false};
+ S.people.push(p);return p.id;
+}
+function me(){return S.people.find(x=>x.id===S.current)}
+function person(id){return S.people.find(x=>x.id===id)}
+function clamp(v){return Math.max(0,Math.min(100,v))}
+function bar(v){return Math.round(v)+'<div class="bar"><div class="fill" style="width:'+clamp(v)+'%"></div></div>'}
+function addLog(x){S.logs.push(me().age+" лет — "+x)}
+function render(){
+ const p=me();who.textContent=p.name;age.textContent=p.age+" лет";money.textContent=Math.round(p.money);job.textContent=p.job;home.textContent=p.home;dreamShow.textContent=p.dream;
+ health.innerHTML=bar(p.health);happy.innerHTML=bar(p.happy);energy.innerHTML=bar(p.energy);skill.innerHTML=bar(p.skill);
+ const partner=p.partner?person(p.partner):null;
+ relations.innerHTML=(partner?'<div class="person">❤️ '+partner.name+'<span>партнёр</span></div>':'')+p.children.map(id=>{let c=person(id);return '<div class="person">👶 '+c.name+' <span>'+c.age+' лет</span></div>'}).join("")||'<div class="muted">пока никого</div>';
+ dynasty.innerHTML='<div>🌳 Поколение: <b>'+S.generation+'</b></div><div>👨‍👩‍👧 Живых: <b>'+S.people.filter(x=>x.alive).length+'</b></div><div>⚰️ Умерших: <b>'+S.totalDeaths+'</b></div><div>👶 Потомков: <b>'+descendants(p.id)+'</b></div>';
+ log.innerHTML=S.logs.slice().reverse().map(x=>'<div>'+x+'</div>').join("");
+ familyList.innerHTML=familyHTML(p);
+ treeView.innerHTML=treeHTML();
+ assetsView.innerHTML='<p>🏠 '+p.home+'</p><p>🚗 '+(p.car?'Есть машина':'Нет машины')+'</p><p>🏪 '+(p.business?'Есть бизнес':'Нет бизнеса')+'</p><p>💶 Деньги: '+Math.round(p.money)+'€</p>';
+}
+function familyHTML(p){
+ let out='';
+ if(p.parents.length) out+='<h3>👵 Родители</h3>'+p.parents.map(id=>person(id)).filter(Boolean).map(x=>'<div class="person">👤 '+x.name+' <span>'+x.age+' лет</span></div>').join("");
+ if(p.partner)out+='<h3>❤️ Партнёр</h3><div class="person">💍 '+person(p.partner).name+' <span>'+person(p.partner).age+' лет</span></div>';
+ out+='<h3>👶 Дети</h3>';
+ out+=p.children.length?p.children.map(id=>{let c=person(id);return '<div class="person">👶 '+c.name+' <span>'+c.age+' лет · '+(c.alive?'жив':'умер')+'</span></div>'}).join(""):'<div class="muted">детей пока нет</div>';
+ return out;
+}
+function treeHTML(){
+ return S.people.map(p=>'<div class="node">'+(p.alive?'👤':'⚰️')+' '+p.name+'<br><span class="small">'+p.age+' лет · '+(p.parents.length?'ребёнок':'основатель')+'</span></div>').join("→ ");
+}
+function descendants(id){let n=0;function f(x){x.children.forEach(c=>{n++;f(person(c))})}f(person(id));return n}
+function showTab(id){document.querySelectorAll(".tabpage").forEach(x=>x.classList.add("hidden"));document.getElementById(id).classList.remove("hidden")}
+function nextEvent(){used=false;let e=events[Math.floor(Math.random()*events.length)];event.textContent=e[0];choices.innerHTML=e[1].map((x,i)=>'<button class="choice" onclick="choose('+i+')">'+x+'</button>').join("")}
+function choose(i){if(used)return;used=true;choices.innerHTML="";let p=me();if(i===0){p.money+=300;p.skill+=3;p.happy+=2;addLog("✨ Решение принесло новые возможности.")}else{p.energy+=6;p.happy+=5;addLog("🌿 Выбрал более спокойный путь.")}render()}
+function study(){let p=me();p.money-=60;p.skill+=8;p.energy-=12;p.happy-=2;addLog("📚 Учился и развивал навыки.");render()}
+function work(){let p=me();let j=jobs[p.trait]||jobs.smart;let g=j[1]+Math.floor(p.skill*4);p.job=j[0];p.money+=g;p.energy-=16;p.skill+=2;addLog("💼 Работал и получил "+g+"€.");render()}
+function rest(){let p=me();p.energy=clamp(p.energy+17);p.happy=clamp(p.happy+8);p.health=clamp(p.health+2);addLog("🛋️ Хорошо отдохнул.");render()}
+function dateAction(){
+ let p=me();if(p.partner){alert("Ты уже в отношениях.");return}
+ if(p.age<16){alert("Сейчас ещё рано.");return}
+ let n=randomNames[Math.floor(Math.random()*randomNames.length)];let id=newPerson(n,p.age,null,{trait:["smart","social","hard","creative","lucky"][Math.floor(Math.random()*5)]});p.partner=id;p.married=false;p.happy+=8;addLog("❤️ Познакомился с "+n+".");render()
+}
+function childAction(){
+ let p=me();if(!p.partner){alert("Сначала нужны отношения.");return}
+ if(p.age<18||p.age>55){alert("Сейчас завести ребёнка не получится.");return}
+ let n=randomNames[Math.floor(Math.random()*randomNames.length)];let id=newPerson(n,0,p.id);p.children.push(id);if(p.partner)person(p.partner).children.push(id);p.money-=250;p.happy+=12;addLog("👶 Родился ребёнок — "+n+".");render()
+}
+function buyHome(){let p=me();if(p.money<2500){alert("Нужно 2500€.");return}p.money-=2500;p.home="Собственный дом";addLog("🏠 Купил собственный дом.");render()}
+function buyCar(){let p=me();if(p.car){alert("Машина уже есть.");return}if(p.money<1200){alert("Нужно 1200€.");return}p.money-=1200;p.car=true;addLog("🚗 Купил машину.");render()}
+function business(){let p=me();if(p.business){alert("Бизнес уже есть.");return}if(p.money<5000){alert("Нужно 5000€.");return}p.money-=5000;p.business=true;addLog("🏪 Открыл собственный бизнес.");render()}
+function nextYear(){
+ let p=me();if(!p.alive)return;
+ p.age++;p.energy-=7;p.health-=1.5;
+ // все живые члены семьи стареют вместе
+ S.people.filter(x=>x.alive&&x.id!==p.id).forEach(x=>{x.age++;x.energy-=3;if(x.age>75)x.health-=3});
+ if(p.age>=20&&p.job==="Без работы"){let j=jobs[p.trait]||jobs.smart;p.job=j[0];addLog("🎓 Начал карьеру: "+p.job+".")}
+ if(p.job!=="Без работы")p.money+=Math.round((jobs[p.trait]||jobs.smart)[1]+p.skill*2);
+ if(p.business)p.money+=900;
+ if(p.age>=65){p.health-=2;p.energy-=2}
+ // дети взрослеют; взрослые дети получают независимость
+ p.children.forEach(id=>{let c=person(id);if(c&&c.age>=18&&c.alive&&Math.random()<.2)addChildLife(c)});
+ if(p.partner&&person(p.partner).alive&&p.age>=24&&p.age<=50&&Math.random()<.15)childAction();
+ if(Math.random()<.25){p.happy=clamp(p.happy+8);addLog("🍀 Произошло что-то хорошее.")}
+ // случайная смерть членов семьи старшего возраста
+ S.people.filter(x=>x.alive&&x.age>=78).forEach(x=>{if(Math.random()<.09)die(x)});
+ if(p.health<=0||p.age>=95)die(p);
+ render();
+ if(me()&&me().alive){nextEvent()}else{showSuccession()}
+ save()
+}
+function addChildLife(c){if(!c.job&&c.age>=18){c.job=jobs[c.trait][0];c.money+=500}}
+function die(p){
+ if(!p.alive)return;p.alive=false;S.totalDeaths++;S.dynastyMoney+=Math.max(0,p.money);
+ if(p.partner){let q=person(p.partner);if(q)q.partner=null}
+ S.logs.push(p.age+" лет — ⚰️ "+p.name+" умер.");
+ if(p.id===S.current){p.children.forEach(id=>{let c=person(id);if(c&&c.alive)c.money+=Math.floor(Math.max(0,p.money)/Math.max(1,p.children.length))});}
+}
+function showSuccession(){
+ const p=S.people.find(x=>x.id===S.current), kids=p?p.children.map(person).filter(x=>x&&x.alive&&x.age>=18):[];
+ if(!kids.length){game.innerHTML='<div class="card ending"><div style="font-size:60px">🌅</div><h1>Династия завершена</h1><p>У персонажа не осталось взрослых наследников.</p><p>Поколение: '+S.generation+' · Смертей: '+S.totalDeaths+'</p><button onclick="resetGame()">Начать новую династию</button></div>';return}
+ game.innerHTML='<div class="card ending"><div style="font-size:60px">⚰️</div><h1>'+p.name+' умер</h1><p>Теперь можно продолжить историю за ребёнка.</p><div id="heirs"></div></div>';
+ heirs.innerHTML=kids.map(k=>'<button style="margin:5px" onclick="continueAs('+k.id+')">👤 '+k.name+' · '+k.age+' лет</button>').join("")
+}
+function continueAs(id){
+ S.current=id;S.generation++;let p=me();p.home=p.home==="Родительский дом"?"Родительский дом":p.home;save();location.reload(); // restore UI from save
+}
+function save(){localStorage.setItem(saveKey,JSON.stringify(S))}
+function load(){try{let x=localStorage.getItem(saveKey);if(x){S=JSON.parse(x);document.getElementById("create").classList.add("hidden");document.getElementById("game").classList.remove("hidden");render();nextEvent()}}catch(e){}}
+function resetGame(){localStorage.removeItem(saveKey);location.reload()}
+load()
 </script></body></html>
