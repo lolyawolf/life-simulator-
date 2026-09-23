@@ -2,136 +2,49 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Life Simulator — World & Generations</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Life Simulator</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#0d0f17;color:#f4f5fa;font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif}
-.wrap{max-width:1180px;margin:auto;padding:14px}.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-h1,h2,h3{margin:4px 0 12px}.muted{color:#a7abbc}.card{background:#181b27;border:1px solid #2a2e40;border-radius:18px;padding:16px;margin-top:12px}
-.grid{display:grid;grid-template-columns:1.35fr .8fr;gap:12px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.stat{background:#222637;border-radius:12px;padding:10px}.bar{height:7px;background:#363a4d;border-radius:8px;overflow:hidden;margin-top:5px}.fill{height:100%;background:#8169ff}
-.age{font-size:42px;font-weight:900}.money{font-size:25px;font-weight:850}.event{font-size:17px;line-height:1.5;white-space:pre-line}
-button,input,select{font:inherit}button{border:0;border-radius:11px;padding:10px 13px;background:#795cff;color:white;font-weight:750;cursor:pointer}
-button.secondary{background:#292d3e}button.danger{background:#bf4561}button:disabled{opacity:.45;cursor:not-allowed}
-input,select{width:100%;padding:11px;background:#10121b;color:#fff;border:1px solid #383c51;border-radius:10px;margin:5px 0}
-.actions{display:flex;gap:7px;flex-wrap:wrap}.actions button{flex:1;min-width:125px}.choice{display:block;width:100%;text-align:left;margin-top:8px;background:#25293a}
-.tabs{display:flex;gap:7px;overflow:auto;margin-top:12px}.tabs button{white-space:nowrap}.hidden{display:none}
-.person{display:flex;justify-content:space-between;gap:8px;background:#222637;border-radius:10px;padding:9px;margin:6px 0}
-.log{max-height:280px;overflow:auto;font-size:14px}.log div{padding:6px 0;border-bottom:1px solid #292d3d}
-.tree{overflow:auto;line-height:2}.node{display:inline-block;background:#25293a;border-radius:12px;padding:8px 10px;margin:4px;text-align:center}
-.pill{display:inline-block;background:#292d3e;border-radius:99px;padding:4px 8px;margin:2px;font-size:13px}
-.end{text-align:center;padding:35px}.small{font-size:13px}
-@media(max-width:780px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.wrap{padding:9px}}
-</style>
-
-<style>
-/* iPhone/Safari controls */
-input, button { -webkit-appearance:none; appearance:none; }
-select { -webkit-appearance:auto; appearance:auto; color:#fff; background:#10121b; }
-input, select { min-height:46px; font-size:16px; }
-select {
-  color:#fff;
-  background:#10121b;
-  padding-right:11px;
-}
-input:focus,select:focus { outline:2px solid #795cff; outline-offset:1px; }
-button { -webkit-tap-highlight-color:transparent; min-height:44px; }
-@media(max-width:780px){
-  .top h1{font-size:27px}
-  .card{padding:14px}
-  .actions{display:grid;grid-template-columns:1fr 1fr}
-  .actions button{min-width:0;width:100%}
-  .choice{min-height:48px}
-  .tabs{padding-bottom:2px}
-}
-select, option { color:#fff; background-color:#10121b; }
-</style>
-
-<style>
-.picker{width:100%;text-align:left;background:#10121b;border:1px solid #383c51;color:#fff;margin:5px 0;min-height:46px}
-.picker:active{background:#25293a}
-.pick-list{display:grid;gap:8px;margin:6px 0 10px}
-.pick-option{width:100%;text-align:left;background:#25293a}
+*{box-sizing:border-box}html{background:#080a12}body{margin:0;background:radial-gradient(circle at 20% 0%,#24204a 0,#0d0e18 32%,#080a12 72%);color:#f6f4ff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}button,input{font:inherit}button{-webkit-appearance:none;appearance:none;border:0;cursor:pointer;color:#fff;background:linear-gradient(135deg,#7f5cff,#a46cff);border-radius:13px;padding:11px 15px;font-weight:800;box-shadow:0 7px 22px #5b42b522;transition:.18s}button:hover{transform:translateY(-1px);filter:brightness(1.08)}button.secondary{background:#171a2b;border:1px solid #343652;box-shadow:none}button.danger{background:#a83c62}.wrap{max-width:1420px;margin:auto;padding:16px}.topbar{display:flex;align-items:center;gap:18px;padding:10px 6px 18px}.brand{display:flex;align-items:center;gap:12px;min-width:max-content}.brand-orb{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:24px;background:linear-gradient(135deg,#7e61ff,#e48cff);box-shadow:0 0 35px #8b69ff55}.brand h1{font-size:25px;margin:0;letter-spacing:.02em}.brand small{color:#aaa8c3}.nav{display:flex;gap:7px;overflow:auto;margin-left:auto}.nav button{background:#111424;border:1px solid #292d47;box-shadow:none;white-space:nowrap;padding:9px 13px}.nav button.active{background:#6f52d9;border-color:#9a7bff}.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 290px;gap:14px;align-items:start}.card{background:linear-gradient(180deg,#151827ee,#10121eee);border:1px solid #292d45;border-radius:20px;padding:16px;box-shadow:0 16px 45px #0000002e;backdrop-filter:blur(12px)}.stack{display:grid;gap:14px}.profile{padding:0;overflow:hidden}.profile-cover{height:105px;background:radial-gradient(circle at 75% 20%,#d78cff55,transparent 30%),linear-gradient(135deg,#28204d,#14172a 65%,#0e111d)}.profile-main{padding:0 16px 16px;margin-top:-42px}.avatar{display:grid;place-items:center;border-radius:22px;background:linear-gradient(145deg,#26253c,#0d0f1b);border:2px solid #9b7dff66;box-shadow:0 12px 35px #0008;overflow:hidden}.avatar span{filter:drop-shadow(0 5px 6px #0008)}.avatar-lg{width:112px;height:112px;font-size:64px}.avatar-md{width:52px;height:52px;font-size:29px;border-radius:16px}.avatar-sm{width:42px;height:42px;font-size:23px;border-radius:13px}.name{font-size:22px;font-weight:900;margin-top:10px}.sub{color:#a8a7bb;font-size:13px}.pill{display:inline-flex;gap:5px;align-items:center;background:#1c1f31;border:1px solid #30344e;border-radius:99px;padding:5px 8px;font-size:12px;margin:3px 2px 0 0}.money{font-size:25px;font-weight:900;margin:8px 0}.profile-row{display:flex;align-items:center;gap:10px;margin-top:10px}.profile-row b{display:block}.muted{color:#9293aa}.hero{display:grid;grid-template-columns:1fr 1.35fr;gap:14px}.hero-card{min-height:245px}.date-line{display:flex;justify-content:space-between;align-items:start;gap:12px}.age{font-size:43px;font-weight:950;line-height:1}.place{color:#b0aec4;margin-top:8px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px}.stat{background:#1a1d2c;border:1px solid #292e45;border-radius:14px;padding:10px}.stat-head{display:flex;justify-content:space-between;color:#c8c6d8;font-size:13px}.bar,.needbar{height:7px;background:#303449;border-radius:99px;overflow:hidden;margin-top:7px}.fill,.needbar i{display:block;height:100%;background:linear-gradient(90deg,#8062ff,#d77cff);border-radius:99px}.stat b{font-size:15px}.next{height:100%;display:flex;flex-direction:column;justify-content:space-between;background:radial-gradient(circle at 80% 0,#7d5cff20,transparent 38%),#111425}.next .month{font-size:28px;font-weight:900}.next-btn{width:100%;margin-top:14px}.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}.section-title h3{margin:0;font-size:16px}.section-title span{color:#8f80c7;font-size:12px}.event{display:grid;grid-template-columns:150px 1fr;gap:14px}.event-art{min-height:170px;border-radius:16px;background:linear-gradient(145deg,#31224d,#14182a);display:grid;place-items:center;font-size:58px;border:1px solid #343753}.event-copy{font-size:16px;line-height:1.55}.choice{display:block;width:100%;text-align:left;background:#181b2d;border:1px solid #2d314b;margin-top:8px;box-shadow:none}.choice:hover{border-color:#8065ff;background:#211d39}.people{display:grid;gap:8px}.person{display:flex;align-items:center;gap:10px;padding:9px;border-radius:14px;background:#181b2b;border:1px solid #292e45}.person .meta{min-width:0;flex:1}.person .meta b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.person .meta small{color:#8f91a8}.person .heart{font-size:14px;color:#e891bd}.history{max-height:310px;overflow:auto}.history div{display:grid;grid-template-columns:90px 1fr;gap:8px;padding:9px 0;border-bottom:1px solid #23273a;font-size:13px}.history time{color:#9e87e8}.needs{display:grid;gap:9px}.need{display:grid;grid-template-columns:95px 1fr 30px;align-items:center;gap:7px;font-size:12px}.needbar{margin:0;height:6px}.needbar i{background:linear-gradient(90deg,#5da9ff,#c57dff)}.achievements{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.achievement{padding:11px;border:1px solid #292d44;border-radius:14px;background:#141727;display:flex;gap:9px;align-items:center;opacity:.45}.achievement.unlocked{opacity:1;border-color:#5c4b94}.ach-icon{font-size:25px}.achievement b{font-size:12px;display:block}.achievement small{font-size:10px;color:#85879d}.city-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.city-tile{min-height:85px;border-radius:14px;padding:12px;background:linear-gradient(145deg,#202238,#131625);border:1px solid #2b3048;display:flex;flex-direction:column;justify-content:end}.city-tile b{font-size:13px}.city-tile span{font-size:11px;color:#9092aa}.log{max-height:310px;overflow:auto}.tabs-page{display:none}.tabs-page.active{display:block}.hidden{display:none!important}.create{max-width:680px;margin:70px auto}.create-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.create-title{font-size:31px;margin:0}.random-row{display:flex;gap:8px}.random-row>*:first-child{flex:1}.dice{width:48px;padding:0;font-size:19px}.picker,input{width:100%;min-height:46px;background:#0f1220;color:#fff;border:1px solid #353951;border-radius:12px;padding:11px 12px}.pick-list{display:grid;gap:7px;margin:5px 0}.pick-option{background:#1b1e30;text-align:left;box-shadow:none}.footer-note{text-align:center;color:#686b82;font-size:11px;margin-top:15px}.tree{overflow:auto;display:flex;gap:8px;flex-wrap:wrap}.node{padding:10px 12px;border-radius:15px;background:#1a1d2d;border:1px solid #30354d;text-align:center}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1;min-width:120px}.page-full{margin-top:14px}.stuff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stuff-tile{padding:14px;background:#171a2a;border:1px solid #292e45;border-radius:15px}.stuff-tile b{font-size:20px}.small{font-size:12px;color:#8c8fa6}@media(max-width:1100px){.grid{grid-template-columns:250px minmax(0,1fr)}.right-col{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}.achievements{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){.wrap{padding:9px}.topbar{align-items:flex-start;flex-direction:column}.nav{width:100%;margin:0}.grid{grid-template-columns:1fr}.right-col{grid-column:auto;display:block}.hero{grid-template-columns:1fr}.event{grid-template-columns:1fr}.event-art{min-height:105px}.achievements{grid-template-columns:1fr 1fr}.city-grid,.stuff-grid{grid-template-columns:1fr 1fr}.create{margin:20px auto}.create-grid{grid-template-columns:1fr}.brand h1{font-size:21px}.age{font-size:38px}.actions{display:grid;grid-template-columns:1fr 1fr}.actions button{min-width:0}}
 </style>
 </head>
 <body><div class="wrap">
+<header class="topbar"><div class="brand"><div class="brand-orb">🌍</div><div><h1>LIFE SIMULATOR</h1><small>твоя жизнь · твои решения · твоя история</small></div></div><nav class="nav"><button class="active" onclick="tab('life')">Главная</button><button onclick="tab('family')">Семья</button><button onclick="tab('city')">Город</button><button onclick="tab('tree')">Династия</button><button onclick="tab('stuff')">Имущество</button></nav></header>
 
-<div class="top">
- <div><h1>🌍 LIFE SIMULATOR</h1><div class="muted">жизнь · город · события · отношения · поколения</div></div>
- <button class="secondary" onclick="newDynasty()">Новая династия</button>
-</div>
-
-<section id="create" class="card">
-<h2>🌱 Рождение персонажа</h2>
-<p class="muted">характер и мечта пока не выбираются — они сформируются по ходу жизни.</p>
-<input id="cname" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Имя ребёнка">
-<button type="button" class="picker" id="countryPicker" onclick="togglePicker('country')">🌍 Германия</button>
-<div id="countryOptions" class="pick-list hidden"></div>
-<button type="button" class="picker" id="cityPicker" onclick="togglePicker('city')">📍 Берлин</button>
-<div id="cityOptions" class="pick-list hidden"></div>
-<select id="familyType">
-<option value="poor">Семья с небольшим доходом</option>
-<option value="middle" selected>Обычная семья</option>
-<option value="rich">Обеспеченная семья</option>
-</select>
-<button onclick="createLife()">Родиться и начать жизнь</button>
-</section>
+<section id="create" class="card create"><div class="profile-cover"></div><div style="padding:18px 20px"><div class="muted">🌱 СОЗДАНИЕ ЖИЗНИ</div><h2 class="create-title">Кем начнётся эта история?</h2><p class="muted">имя, страна и город можно рандомизировать. характер, мечта и отношения появятся сами по ходу жизни.</p><div class="create-grid"><div><label class="small">Имя</label><div class="random-row"><input id="cname" placeholder="Имя ребёнка"><button class="dice" onclick="randomizeName()">🎲</button></div></div><div><label class="small">Место рождения</label><div class="random-row"><button class="picker" id="countryPicker" onclick="togglePicker('country')">🌍 Германия</button><button class="dice" onclick="randomizeCountry()">🎲</button></div><div id="countryOptions" class="pick-list hidden"></div><div class="random-row"><button class="picker" id="cityPicker" onclick="togglePicker('city')">📍 Берлин</button><button class="dice" onclick="randomizeCity()">🎲</button></div><div id="cityOptions" class="pick-list hidden"></div></div></div><button style="width:100%;margin-top:14px" onclick="createLife()">✨ Родиться и начать жизнь</button><div class="footer-note">достаток семьи определяется случайно</div></div></section>
 
 <section id="game" class="hidden">
-<div class="tabs">
-<button onclick="tab('life')">❤️ Жизнь</button><button class="secondary" onclick="tab('family')">👨‍👩‍👧 Семья</button>
-<button class="secondary" onclick="tab('city')">🌆 Город</button><button class="secondary" onclick="tab('tree')">🌳 Династия</button>
-<button class="secondary" onclick="tab('stuff')">💰 Имущество</button>
-</div>
-
-<div id="life" class="page">
+<div id="life" class="tabs-page active">
 <div class="grid">
-<main>
-<div class="card">
-<div class="muted">сейчас играет</div><h2 id="who"></h2><div class="age" id="age"></div>
-<div class="muted">📍 <span id="place"></span></div>
-<div class="stats">
-<div class="stat">❤️ Здоровье<div id="health"></div></div><div class="stat">😊 Счастье<div id="happy"></div></div>
-<div class="stat">⚡ Энергия<div id="energy"></div></div><div class="stat">⭐ Навык<div id="skill"></div></div>
-</div>
-<p class="money">💶 <span id="money"></span></p>
-<div class="muted">💼 <span id="job"></span> · 🏠 <span id="home"></span></div>
-<div id="traits"></div><div class="muted">🎯 Мечта: <span id="dream"></span></div>
-</div>
+<aside class="stack">
+<div class="card profile"><div class="profile-cover"></div><div class="profile-main"><div id="avatarLarge"></div><div class="name" id="who"></div><div class="sub" id="place"></div><div id="traits" style="margin-top:7px"></div><div class="profile-row"><div>💼 <b id="job"></b><span class="sub">учёба / работа</span></div></div><div class="profile-row"><div>🏠 <b id="home"></b><span class="sub">жильё</span></div></div><div class="money">💶 <span id="money"></span></div><div class="pill">👨‍👩‍👧 <span id="familyWealth">обычная семья</span></div><div class="pill">🎯 <span id="dream">мечта ещё формируется</span></div></div></div>
+<div class="card"><div class="section-title"><h3>👨‍👩‍👧 Семья</h3><span>рядом</span></div><div id="relations" class="people"></div></div>
+<div class="card"><div class="section-title"><h3>🍀 Потребности</h3><span>сейчас</span></div><div id="needs" class="needs"></div></div>
+</aside>
 
-<div class="card">
-<div class="muted" id="date"></div><h3>📖 Что происходит</h3>
-<div class="event" id="event"></div><div id="choices"></div>
-<div class="actions" style="margin-top:12px">
-<button onclick="nextMonth()">📅 Следующий месяц</button>
-<button class="secondary" onclick="study()">📚 Учиться</button>
-<button class="secondary" onclick="work()">💼 Работать</button>
-<button class="secondary" onclick="relax()">🛋️ Отдохнуть</button>
-</div>
-</div>
+<main class="stack">
+<div class="hero"><div class="card hero-card"><div class="date-line"><div><div class="muted" id="date"></div><div class="age" id="age"></div><div class="place">📍 <span id="place2"></span></div></div><div style="font-size:35px">✨</div></div><div class="stats"><div class="stat"><div class="stat-head"><span>❤️ Здоровье</span><b id="healthNum"></b></div><div id="health"></div></div><div class="stat"><div class="stat-head"><span>😊 Настроение</span><b id="happyNum"></b></div><div id="happy"></div></div><div class="stat"><div class="stat-head"><span>⚡ Энергия</span><b id="energyNum"></b></div><div id="energy"></div></div><div class="stat"><div class="stat-head"><span>⭐ Навык</span><b id="skillNum"></b></div><div id="skill"></div></div></div></div><div class="card next"><div><div class="muted">ВРЕМЯ</div><div class="month" id="monthBig">Следующий месяц</div><p class="muted">каждый месяц меняет твою историю</p></div><button class="next-btn" onclick="nextMonth()">📅 Следующий месяц →</button></div></div>
 
-<div class="card"><h3>📜 Личная история</h3><div class="log" id="log"></div></div>
+<div class="card"><div class="section-title"><h3>💜 Событие месяца</h3><span id="eventTag">случайное событие</span></div><div class="event"><div class="event-art" id="eventArt">✨</div><div><div class="event-copy" id="event"></div><div id="choices"></div></div></div><div class="actions" style="margin-top:13px"><button class="secondary" onclick="study()">📚 Учиться</button><button class="secondary" onclick="work()">💼 Работать</button><button class="secondary" onclick="relax()">🛋️ Отдохнуть</button></div></div>
+
+<div class="card"><div class="section-title"><h3>📜 История жизни</h3><span>последние события</span></div><div class="history" id="log"></div></div>
+
+<div class="card"><div class="section-title"><h3>🏆 Достижения</h3><span>прогресс</span></div><div id="achievements" class="achievements"></div></div>
 </main>
 
-<aside>
-<div class="card"><h3>💞 Люди рядом</h3><div id="relations"></div></div>
-<div class="card"><h3>🏆 Династия</h3><div id="dynasty"></div></div>
+<aside class="right-col stack">
+<div class="card"><div class="section-title"><h3>💞 Отношения</h3><span>все</span></div><div id="relationsRight" class="people"></div></div>
+<div class="card"><div class="section-title"><h3>⭐ Навыки</h3><span>уровни</span></div><div id="skillsView" class="people"></div></div>
+<div class="card"><div class="section-title"><h3>🌆 Город</h3><span id="cityCurrent"></span></div><div id="cityMini" class="city-grid"></div></div>
 </aside>
-</div>
-</div>
+</div></div>
 
-<div id="family" class="page hidden"><div class="card"><h2>👨‍👩‍👧 Семья</h2><div id="familyView"></div><div class="actions"><button onclick="meetSomeone()">❤️ Познакомиться</button><button class="secondary" onclick="haveChild()">👶 Завести ребёнка</button><button class="secondary" onclick="marry()">💍 Сыграть свадьбу</button><button class="danger" onclick="divorce()">💔 Расстаться</button></div></div></div>
-
-<div id="city" class="page hidden"><div class="card"><h2>🌆 Город и путешествия</h2><p id="cityInfo"></p><div id="cities"></div></div></div>
-
-<div id="tree" class="page hidden"><div class="card"><h2>🌳 Семейное дерево</h2><div class="tree" id="treeView"></div></div></div>
-
-<div id="stuff" class="page hidden"><div class="card"><h2>🏠 Имущество</h2><div id="stuffView"></div><div class="actions"><button onclick="buyHome()">🏠 Купить жильё</button><button class="secondary" onclick="buyCar()">🚗 Купить машину</button><button class="secondary" onclick="startBusiness()">🏪 Открыть бизнес</button></div></div></div>
+<div id="family" class="tabs-page page-full"><div class="card"><div class="section-title"><h2>👨‍👩‍👧 Семья</h2><span>отношения и дети</span></div><div id="familyView"></div><div class="actions" style="margin-top:12px"><button onclick="meetSomeone()">❤️ Познакомиться</button><button class="secondary" onclick="haveChild()">👶 Завести ребёнка</button><button class="secondary" onclick="marry()">💍 Сыграть свадьбу</button><button class="danger" onclick="divorce()">💔 Расстаться</button></div></div></div>
+<div id="city" class="tabs-page page-full"><div class="card"><div class="section-title"><h2>🌆 Город и путешествия</h2></div><p id="cityInfo" class="muted"></p><div id="cities" class="stack"></div></div></div>
+<div id="tree" class="tabs-page page-full"><div class="card"><div class="section-title"><h2>🌳 Семейное дерево</h2></div><div class="tree" id="treeView"></div></div></div>
+<div id="stuff" class="tabs-page page-full"><div class="card"><div class="section-title"><h2>🏠 Имущество</h2></div><div id="stuffView" class="stuff-grid"></div><div class="actions" style="margin-top:12px"><button onclick="buyHome()">🏠 Купить жильё</button><button class="secondary" onclick="buyCar()">🚗 Купить машину</button><button class="secondary" onclick="startBusiness()">🏪 Открыть бизнес</button></div></div></div>
 </section>
 </div>
-
-
-
 <script>
 const world={
  "Германия":{cities:[["Берлин",2500,2100],["Мюнхен",2900,2300],["Гамбург",2200,1900],["Кёльн",2000,1800],["Лейпциг",1500,1300]],culture:"Сильное образование и большой рынок труда."},
@@ -173,6 +86,26 @@ function chooseCity(c){
   el("cityPicker").textContent="📍 "+selectedCity;
   el("cityOptions").classList.add("hidden");
 }
+function randomizeName(){
+  el("cname").value=randName();
+}
+function randomizeCountry(){
+  const countries=Object.keys(world);
+  selectedCountry=countries[Math.floor(Math.random()*countries.length)];
+  const cities=world[selectedCountry].cities;
+  selectedCity=cities[Math.floor(Math.random()*cities.length)][0];
+  el("countryPicker").textContent="🌍 "+selectedCountry;
+  el("cityPicker").textContent="📍 "+selectedCity;
+  el("countryOptions").classList.add("hidden");
+  el("cityOptions").classList.add("hidden");
+  renderLocationOptions();
+}
+function randomizeCity(){
+  const cities=world[selectedCountry].cities;
+  selectedCity=cities[Math.floor(Math.random()*cities.length)][0];
+  el("cityPicker").textContent="📍 "+selectedCity;
+  el("cityOptions").classList.add("hidden");
+}
 
 function uid(){return S.nextId++}
 function randName(){return names[Math.floor(Math.random()*names.length)]}
@@ -190,8 +123,9 @@ function newPerson(name,age,extra={}){
 }
 
 function createLife(){
-  const name=el("cname").value.trim()||"Алекс";
-  const type=el("familyType").value;
+  const name=el("cname").value.trim()||randName();
+  const types=["poor","middle","rich"];
+  const type=types[Math.floor(Math.random()*types.length)];
   S={nextId:1,current:null,generation:1,year:2008,month:1,people:[],logs:[],deaths:0,events:0};
   const base=type==="poor"?250:type==="rich"?1800:800;
   const father=newPerson(randName(),30,{job:jobs[Math.floor(Math.random()*jobs.length)],money:base+500});
@@ -207,6 +141,28 @@ function createLife(){
   save();render();newEvent();
 }
 
+function avatarFor(p, size='md'){
+  const icons=['🧑🏻','👩🏻','🧑🏼','👨🏻','👩🏼','🧑🏽','👨🏽','👩🏽','🧑🏾','👨🏾','👩🏾','🧑🏻‍🎓','👩🏻‍🎓','👨🏻‍💼','👩🏻‍💼','🧑🏼‍🎨','👨🏼‍🎨','👩🏼‍🔬','🧑🏽‍🍳','👨🏽‍🚀'];
+  const icon=icons[(p.id*7 + p.age)%icons.length];
+  return `<div class="avatar avatar-${size}"><span>${icon}</span></div>`;
+}
+function relationType(p){
+  if(!p)return '';
+  if(p.partner)return p.married?'супруг':'партнёр';
+  if(p.age<13)return 'ребёнок';
+  if(p.age<18)return 'подросток';
+  return 'знакомый';
+}
+function renderAchievements(p){
+  const items=[
+    ['🎒','Первый школьный день',p.age>=6],['📚','Хороший ученик',p.skill>=40],['❤️','Первое знакомство',S.people.length>2],['💍','Семья',p.married],['👶','Родитель',p.children.length>0],['🏠','Своё жильё',p.home.includes('Собственный')],['🚗','Своя машина',p.car],['🏪','Предприниматель',p.business],['✈️','Большое путешествие',S.logs.some(x=>x.includes('уехал'))],['🌳','Продолжатель рода',S.generation>1]
+  ];
+  el('achievements').innerHTML=items.map(x=>`<div class="achievement ${x[2]?'unlocked':''}"><div class="ach-icon">${x[0]}</div><div><b>${x[1]}</b><small>${x[2]?'получено':'заблокировано'}</small></div></div>`).join('');
+}
+function renderNeeds(p){
+  const needs=[['🍽️','Голод',clamp(65+p.energy*.35)],['🌙','Сон',clamp(p.energy)],['🧼','Гигиена',clamp(70+p.health*.2)],['🎮','Развлечение',clamp(p.happy)],['👥','Социализация',clamp(p.happy*.9)]];
+  el('needs').innerHTML=needs.map(n=>`<div class="need"><span>${n[0]} ${n[1]}</span><div class="needbar"><i style="width:${n[2]}%"></i></div><b>${Math.round(n[2])}</b></div>`).join('');
+}
 function render(){
   const p=me();if(!p)return;
   el("who").textContent=p.name;
@@ -244,7 +200,7 @@ function renderStuff(p){
   el("stuffView").innerHTML=`<p>🏠 ${p.home}</p><p>🚗 ${p.car?"есть":"нет"}</p><p>🏪 ${p.business?"есть бизнес":"нет бизнеса"}</p><p>💶 ${Math.round(p.money)}€</p>`;
 }
 function countDesc(id){let n=0;function walk(x){(x?.children||[]).forEach(cid=>{n++;walk(person(cid))})}walk(person(id));return n}
-function tab(id){document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));el(id).classList.remove("hidden")}
+function tab(id){document.querySelectorAll(".tabs-page").forEach(x=>x.classList.remove("active"));el(id).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));}
 
 const eventPool=[
  ["🏫 В школе объявили конкурс. Учитель говорит, что у тебя есть шанс.",["🏆 Участвовать","🙈 Не участвовать"],["skill","safe"],6,12],
@@ -349,4 +305,189 @@ function save(){localStorage.setItem(saveKey,JSON.stringify(S))}
 function load(){try{const raw=localStorage.getItem(saveKey);if(!raw)return;S=JSON.parse(raw);if(!S?.people?.length)return;el("create").classList.add("hidden");el("game").classList.remove("hidden");render();newEvent()}catch(e){localStorage.removeItem(saveKey)}}
 function newDynasty(){if(confirm("Начать новую династию?")){localStorage.removeItem(saveKey);location.reload()}}
 initCreate();load();
-</script></body></html>
+</script>
+<script>
+/* LIFE SIMULATOR v4 — более живая симуляция */
+const richEvents = [
+  {min:0,max:2,text:'👶 Ночью ты проснулся и долго плакал. Мама взяла тебя на руки, а папа принёс игрушку.',choices:[['🧸 Уснуть на руках','family'],['👀 Разглядывать игрушку','happy']]},
+  {min:2,max:5,text:'🧸 В детском саду другой ребёнок отдаёт тебе свою любимую игрушку.',choices:[['😊 Подружиться','friend'],['🙈 Забрать и убежать','selfish']]},
+  {min:3,max:7,text:'🎨 Ты случайно рисуешь картинку, которая очень нравится воспитателю. Он советует продолжать.',choices:[['🎨 Рисовать ещё','art'],['🤷 Забросить','none']]},
+  {min:5,max:9,text:'🐕 По дороге домой ты замечаешь потерявшуюся собаку.',choices:[['❤️ Помочь найти хозяина','kind'],['🚶 Пройти мимо','none']]},
+  {min:7,max:12,text:'🏫 Учитель неожиданно хвалит тебя перед всем классом.',choices:[['⭐ Постараться ещё сильнее','study'],['😳 Засмущаться','shy']]},
+  {min:8,max:12,text:'📚 Завтра важная контрольная, но друзья зовут тебя гулять.',choices:[['📚 Учиться','study'],['🌳 Пойти гулять','party'],['😴 Остаться дома','rest']]},
+  {min:9,max:13,text:'😔 Одноклассник постоянно пытается тебя задеть.',choices:[['🗣️ Рассказать учителю','brave'],['🙃 Игнорировать','calm'],['💢 Ответить','angry']]},
+  {min:10,max:15,text:'🏆 В городе проходит конкурс. У тебя есть шанс попасть в финал.',choices:[['🏆 Участвовать','talent'],['🙈 Не рисковать','safe']]},
+  {min:12,max:17,text:'💬 Лучший друг признаётся, что хочет переехать в другой город.',choices:[['❤️ Поддержать','friend'],['😡 Попытаться отговорить','conflict']]},
+  {min:13,max:17,text:'❤️ В школе появляется человек, который тебе очень нравится.',choices:[['💌 Попробовать познакомиться','crush'],['👀 Просто наблюдать','shy']]},
+  {min:14,max:18,text:'🎉 Тебя зовут на вечеринку в день перед важным экзаменом.',choices:[['🎉 Пойти','party'],['📚 Остаться и готовиться','study'],['🤝 Заглянуть ненадолго','balance']]},
+  {min:15,max:18,text:'💼 Ты можешь впервые подработать и заработать свои деньги.',choices:[['💶 Взяться за работу','work'],['🎓 Сосредоточиться на учёбе','study']]},
+  {min:16,max:20,text:'🏠 Родители говорят, что семейный бюджет сильно изменился.',choices:[['💪 Начать помогать','familyhelp'],['🎓 Сосредоточиться на себе','self']]},
+  {min:18,max:24,text:'🎓 После школы перед тобой несколько дорог: учёба, работа или переезд.',choices:[['🎓 Учиться','studyadult'],['💼 Работать','career'],['✈️ Переехать','movechance']]},
+  {min:18,max:30,text:'💘 На работе или учёбе ты знакомишься с человеком, с которым неожиданно легко.',choices:[['❤️ Продолжить общение','romance'],['👋 Оставить всё как есть','none']]},
+  {min:18,max:40,text:'💸 Приходит счёт, который оказался намного больше ожидаемого.',choices:[['💳 Оплатить','pay'],['📞 Договориться о рассрочке','negotiate'],['🧹 Сократить расходы','save']]},
+  {min:19,max:35,text:'✈️ Друг предлагает спонтанно съездить в другой город на несколько дней.',choices:[['✈️ Согласиться','travel'],['🏠 Остаться','stay']]},
+  {min:20,max:45,text:'📈 Начальник замечает, что ты хорошо справляешься с работой.',choices:[['🚀 Попросить повышение','promotion'],['😌 Ничего не менять','safe']]},
+  {min:20,max:45,text:'🏪 У тебя появилась идея небольшого бизнеса.',choices:[['🚀 Рискнуть','business'],['💼 Оставить это как идею','job']]},
+  {min:23,max:50,text:'💍 Отношения становятся серьёзными. Партнёр говорит о совместной жизни.',choices:[['🏠 Съехаться','cohabit'],['❤️ Обсудить будущее','talk'],['😬 Взять паузу','pause']]},
+  {min:25,max:45,text:'👶 Вы с партнёром неожиданно начинаете серьёзно думать о ребёнке.',choices:[['👶 Попробовать','baby'],['⏳ Подождать','wait']]},
+  {min:25,max:55,text:'💼 Компания сокращает сотрудников, и твоя должность оказалась под угрозой.',choices:[['📚 Повысить навыки','skillup'],['🔎 Искать другую работу','jobhunt'],['🤞 Остаться и ждать','wait']]},
+  {min:30,max:55,text:'🏠 Появляется шанс купить жильё, но это сильно ударит по накоплениям.',choices:[['🏠 Купить','house'],['💰 Ещё копить','save']]},
+  {min:35,max:60,text:'👨‍👩‍👧 Ребёнок просит совета по поводу большой проблемы в своей жизни.',choices:[['❤️ Поддержать','parent'],['🗣️ Дать строгий совет','strict']]},
+  {min:40,max:65,text:'👵 Родственнику нужна помощь, и теперь часть заботы ложится на тебя.',choices:[['❤️ Помочь','help'],['💶 Помочь деньгами','money']]},
+  {min:45,max:65,text:'🌿 Ты неожиданно понимаешь, что давно хотел новое хобби.',choices:[['🎸 Попробовать что-то новое','hobby'],['💼 Продолжить жить по привычке','none']]},
+  {min:55,max:75,text:'🌍 Ты давно никуда не ездил. Появляется возможность устроить большую поездку.',choices:[['✈️ Отправиться','travel'],['🏠 Остаться дома','stay']]},
+  {min:60,max:80,text:'🎓 Ребёнок заканчивает важный этап учёбы. Ты гордишься им.',choices:[['❤️ Поддержать','familyhappy'],['💶 Подарить деньги','gift']]},
+  {min:65,max:90,text:'👴 Ты всё чаще думаешь о том, как хочется провести следующие годы.',choices:[['🌍 Путешествовать','travel'],['👨‍👩‍👧 Быть рядом с семьёй','familyhappy'],['🌿 Жить спокойно','rest']]},
+  {min:70,max:95,text:'👶 В семье появляется новое поколение. Ты становишься дедушкой или бабушкой.',choices:[['🥹 Проводить больше времени с семьёй','familyhappy'],['🎁 Баловать внуков','gift']]},
+  {min:75,max:99,text:'❤️ Семья собирается вместе просто поговорить и вспомнить прошлое.',choices:[['🥹 Рассказать истории','memory'],['🍰 Устроить семейный вечер','familyhappy']]}
+];
+
+function getRichEvent(){
+ const p=me();
+ let pool=richEvents.filter(e=>p.age>=e.min&&p.age<=e.max);
+ if(!pool.length) pool=[{text:'🌤️ Сегодняшний месяц прошёл спокойно. Иногда спокойная жизнь тоже полна маленьких моментов.',choices:[['😊 Насладиться днём','happy'],['📚 Заняться делами','study']]}];
+ return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function applyRichChoice(tag){
+ const p=me();
+ const log=(x)=>{addLog(x);S.events++};
+ switch(tag){
+  case 'family': p.happy+=7; log('👨‍👩‍👧 Получил много заботы от семьи.'); break;
+  case 'happy': p.happy+=7; p.energy-=2; log('😊 Хороший момент остался в памяти.'); break;
+  case 'friend': p.happy+=9; p.skill+=1; log('🤝 Отношения с близким человеком стали крепче.'); break;
+  case 'selfish': p.happy-=4; p.traits.push('самостоятельный'); log('🧸 Поступил так, как хотелось тебе.'); break;
+  case 'art': p.skill+=7; p.traits.push('творческий'); log('🎨 В тебе заметили творческие способности.'); break;
+  case 'kind': p.happy+=10; p.traits.push('добрый'); log('❤️ Помог другому и почувствовал себя лучше.'); break;
+  case 'study': p.skill+=8; p.energy-=7; log('📚 Потратил время на учёбу.'); break;
+  case 'shy': p.happy-=2; p.traits.push('застенчивый'); log('😳 Ты не любишь быть в центре внимания.'); break;
+  case 'rest': p.energy+=12; p.happy+=5; log('🛋️ Решил отдохнуть.'); break;
+  case 'brave': p.traits.push('смелый'); p.happy+=4; log('🗣️ Не промолчал и защитил себя.'); break;
+  case 'calm': p.happy+=2; p.traits.push('спокойный'); log('🌿 Сохранил спокойствие.'); break;
+  case 'angry': p.happy-=7; p.traits.push('вспыльчивый'); log('💢 Не смог сдержать эмоции.'); break;
+  case 'talent': p.skill+=10; p.happy+=6; log('🏆 Показал себя на конкурсе.'); break;
+  case 'conflict': p.happy-=6; log('💬 Разговор с другом закончился спором.'); break;
+  case 'crush': p.happy+=10; p.traits.push('романтичный'); log('❤️ Сделал первый шаг к человеку, который нравится.'); break;
+  case 'party': p.happy+=10; p.energy-=9; log('🎉 Провёл вечер с друзьями.'); break;
+  case 'balance': p.happy+=5; p.energy-=4; p.skill+=3; log('⚖️ Успел и отдохнуть, и подготовиться.'); break;
+  case 'work': p.money+=250; p.energy-=12; p.skill+=3; log('💶 Заработал первые собственные деньги.'); break;
+  case 'familyhelp': p.happy+=5; p.money-=80; p.traits.push('ответственный'); log('❤️ Помог семье.'); break;
+  case 'self': p.skill+=4; log('🎯 Сосредоточился на собственных целях.'); break;
+  case 'studyadult': p.skill+=10; p.energy-=8; p.money-=100; log('🎓 Вложился в образование.'); break;
+  case 'career': if(p.job==='Без работы')p.job=jobs[Math.floor(Math.random()*jobs.length)]; p.money+=450; p.skill+=5; log('💼 Сделал ставку на карьеру.'); break;
+  case 'movechance': if(p.money>=700){p.money-=700;p.city=world[p.country].cities[Math.floor(Math.random()*world[p.country].cities.length)][0];p.happy+=8;log('✈️ Переехал в другой город ради нового этапа.')}else{p.happy-=2;log('💸 Денег на переезд не хватило.')} break;
+  case 'romance': meetSomeone(); return true;
+  case 'pay': p.money-=500; p.happy-=2; log('💸 Оплатил неожиданный счёт.'); break;
+  case 'negotiate': p.money-=100; log('📞 Договорился о рассрочке.'); break;
+  case 'save': p.happy-=2; p.money+=120; log('💰 На время урезал расходы.'); break;
+  case 'travel': p.money-=300; p.happy+=13; log('✈️ Съездил в другой город.'); break;
+  case 'stay': p.energy+=4; log('🏠 Остался дома и восстановился.'); break;
+  case 'promotion': p.money+=700;p.skill+=6;if(p.job==='Без работы')p.job=jobs[Math.floor(Math.random()*jobs.length)];log('📈 Получил повышение или более ответственную роль.');break;
+  case 'business': if(p.money>=1200){p.money-=1200;p.business=true;p.money+=250;log('🏪 Запустил небольшой бизнес.')}else{p.skill+=3;log('🏪 Денег пока не хватило, но идея осталась.')}break;
+  case 'job': p.money+=150; log('💼 Оставил идею на потом.'); break;
+  case 'cohabit': p.happy+=10; if(p.partner){p.home='Совместное жильё';} log('🏠 Начал жить вместе с партнёром.'); break;
+  case 'talk': p.happy+=6; log('❤️ Откровенно поговорил о будущем.'); break;
+  case 'pause': p.happy-=5; log('😬 Решил не торопить события.'); break;
+  case 'baby': if(p.partner&&p.married&&p.age>=18&&p.age<=48){haveChild();return true}else{p.happy-=2;log('👶 Пока условия для ребёнка не сложились.')}break;
+  case 'wait': p.happy+=1; log('⏳ Решил подождать.'); break;
+  case 'skillup': p.skill+=12;p.money-=100;log('📚 Срочно прокачал навыки.');break;
+  case 'jobhunt': if(p.age>=18){p.job=jobs[Math.floor(Math.random()*jobs.length)];p.money+=250;log('🔎 Нашёл новую работу.')}break;
+  case 'house': {const price=cityPrice(p.city);if(p.money>=price){p.money-=price;p.home='Собственный дом в '+p.city;log('🏠 Купил жильё.')}else log('🏠 Решил пока не покупать — накоплений мало.');break;}
+  case 'parent': p.happy+=10;log('❤️ Ребёнок почувствовал твою поддержку.');break;
+  case 'strict': p.happy-=2;p.skill+=2;log('🗣️ Дал строгий совет.');break;
+  case 'help': p.money-=180;p.happy+=9;log('❤️ Помог родственнику.');break;
+  case 'money': p.money-=300;log('💶 Помог родственнику деньгами.');break;
+  case 'hobby': p.skill+=5;p.happy+=8;p.traits.push('увлечённый');log('🌿 Нашёл новое увлечение.');break;
+  case 'familyhappy': p.happy+=12;log('👨‍👩‍👧 Провёл время с семьёй.');break;
+  case 'gift': p.money-=100;p.happy+=8;log('🎁 Подарил близкому человеку подарок.');break;
+  case 'memory': p.happy+=8;log('📖 Вспомнил важные моменты своей жизни.');break;
+ }
+ p.happy=clamp(p.happy);p.energy=clamp(p.energy);p.health=clamp(p.health);p.skill=clamp(p.skill);p.money=Math.max(-2000,p.money);
+ if(p.traits.length>4)p.traits=[...new Set(p.traits)].slice(-4);
+ return false;
+}
+
+function newEvent(){
+ const e=getRichEvent(); currentEvent={rich:true,text:e.text,choices:e.choices};
+ el('event').textContent=e.text;
+ el('choices').innerHTML=e.choices.map((x,i)=>`<button class="choice" onclick="chooseRichEvent(${i})">${x[0]}</button>`).join('');
+}
+function chooseRichEvent(i){
+ const e=currentEvent;if(!e||!e.rich)return;
+ const done=applyRichChoice(e.choices[i][1]);
+ el('choices').innerHTML='';render();save();
+ if(!done && Math.random()<0.18){setTimeout(()=>{newEvent();},120);}
+}
+
+const oldAgeEveryone_v3=ageEveryone;
+function ageEveryone(){
+ oldAgeEveryone_v3();
+ const p=me(); if(!p||!p.alive)return;
+ /* дети и NPC действительно живут своей жизнью */
+ simulatePeople();
+ if(p.age>=18 && p.age%3===0 && !p.dream) p.dream=randomDream();
+ if(p.age>=18 && p.age%5===0 && p.traits.length===0) p.traits.push('целеустремлённый');
+}
+function simulatePeople(){
+ const main=me();
+ S.people.filter(x=>x.alive&&x.id!==main.id).forEach(x=>{
+   if(x.age>=18 && x.job==='Без работы' && Math.random()<0.35)x.job=jobs[Math.floor(Math.random()*jobs.length)];
+   if(x.age>=18){x.money+=Math.max(0,Math.round(180+x.skill*2));x.skill=clamp(x.skill+(Math.random()<0.2?2:0));}
+   if(x.age>=6&&x.age<=17&&Math.random()<0.22)x.skill=clamp(x.skill+2);
+   if(x.age>=18&&x.age<=42&&!x.partner&&Math.random()<0.05){
+      const q=newPerson(randName(),x.age,{country:x.country,city:x.city,job:jobs[Math.floor(Math.random()*jobs.length)],money:300+Math.floor(Math.random()*700)});
+      x.partner=q.id;q.partner=x.id;x.happy=clamp(x.happy+5);
+   }
+   if(x.partner && x.married && x.age>=20&&x.age<=42&&x.children.length<3&&Math.random()<0.035){
+      const q=person(x.partner);
+      if(q&&q.children.length<3){const c=newPerson(randName(),0,{country:x.country,city:x.city,parents:[x.id,q.id]});x.children.push(c.id);q.children.push(c.id);}
+   }
+ });
+}
+
+/* Месяцы теперь ощущаются как настоящая жизнь, а не просто счётчик */
+function nextMonth(){
+ const p=me();if(!p||!p.alive)return;
+ S.month++;
+ if(S.month>12){S.month=1;S.year++;ageEveryone();}
+ if(!me()||!me().alive)return;
+ const cur=me();
+ cur.energy=clamp(cur.energy-2);
+ if(cur.job!=='Без работы'&&cur.age>=18)cur.money+=Math.round(400+cur.skill*3);
+ if(cur.business)cur.money+=Math.round(250+Math.random()*350);
+ if(cur.energy<15)cur.health-=2;
+ if(Math.random()<0.07)cur.health-=3;
+ if(Math.random()<0.04){cur.happy=clamp(cur.happy-5);addLog('🌧️ Месяц оказался эмоционально тяжёлым.');}
+ if(Math.random()<0.03&&cur.age>=18){cur.money+=Math.round(50+Math.random()*500);addLog('💶 Получил неожиданные деньги.');}
+ render();newEvent();save();
+}
+
+/* автоматические черты и мечта */
+function randomDream(){return['Купить большой дом','Создать счастливую семью','Стать богатым','Построить карьеру','Путешествовать по миру','Открыть бизнес','Создать что-то важное','Жить спокойно и свободно'][Math.floor(Math.random()*8)]}
+
+/* чуть живее оформление событий */
+const style=document.createElement('style');
+style.textContent='.event{background:#111522;border:1px solid #2e3450;border-radius:14px;padding:15px;min-height:90px}.choice{transition:.15s}.choice:active{transform:scale(.98)}.pill{transition:.15s}';
+document.head.appendChild(style);
+</script>
+<script>
+// visual layer additions
+const _oldRender=render;
+render=function(){_oldRender();const p=me();if(!p)return;
+  el('avatarLarge').innerHTML=avatarFor(p,'lg');
+  el('place2').textContent=p.city+', '+p.country;
+  el('familyWealth').textContent=p.familyType==='poor'?'бедная семья':p.familyType==='rich'?'обеспеченная семья':'обычная семья';
+  el('healthNum').textContent=Math.round(p.health);el('happyNum').textContent=Math.round(p.happy);el('energyNum').textContent=Math.round(p.energy);el('skillNum').textContent=Math.round(p.skill);
+  el('monthBig').textContent=monthName()+' '+S.year;
+  renderNeeds(p);renderAchievements(p);
+  const people=[...S.people].filter(x=>x.id!==p.id&&x.alive).slice(0,8);
+  const cards=people.map(x=>`<div class="person">${avatarFor(x,'sm')}<div class="meta"><b>${x.name}</b><small>${x.age} лет · ${relationType(x)}</small></div><span class="heart">${x.partner===p.id?'❤️':'♡'}</span></div>`).join('')||'<div class="muted">пока никого</div>';
+  el('relationsRight').innerHTML=cards;
+  el('skillsView').innerHTML=[['📚','Учёба',Math.round(p.skill)],['💬','Общение',Math.round(p.happy*.75)],['🎨','Творчество',Math.round(p.skill*.7)],['🏃','Спорт',Math.round(p.health*.7)],['💼','Карьера',Math.round(Math.min(100,p.skill+(p.job!=='Без работы'?15:0)))],['❤️','Отношения',Math.round(p.happy*.8)]].map(x=>`<div class="person"><span style="font-size:22px">${x[0]}</span><div class="meta"><b>${x[1]}</b><small>ур. ${Math.max(1,Math.ceil(x[2]/20))}</small></div><b>${x[2]}</b></div>`).join('');
+  el('cityCurrent').textContent=p.city;
+  el('cityMini').innerHTML=(world[p.country]?.cities||[]).slice(0,6).map(x=>`<div class="city-tile"><span>📍</span><b>${x[0]}</b><span>от ${x[1]}€</span></div>`).join('');
+  const ev=(currentEvent&&currentEvent[0])||''; el('eventArt').textContent=ev.includes('школ')?'🏫':ev.includes('❤️')?'💗':ev.includes('работ')?'💼':ev.includes('счёт')?'💸':ev.includes('уехать')?'✈️':ev.includes('бизнес')?'🏪':ev.includes('родствен')?'👨‍👩‍👧':'✨';
+};
+const _oldNewEvent=newEvent;newEvent=function(){_oldNewEvent();const p=me();if(p)render();};
+</script>
+</body></html>
