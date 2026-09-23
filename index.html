@@ -20,10 +20,38 @@ input,select{width:100%;padding:11px;background:#10121b;color:#fff;border:1px so
 .log{max-height:280px;overflow:auto;font-size:14px}.log div{padding:6px 0;border-bottom:1px solid #292d3d}
 .tree{overflow:auto;line-height:2}.node{display:inline-block;background:#25293a;border-radius:12px;padding:8px 10px;margin:4px;text-align:center}
 .pill{display:inline-block;background:#292d3e;border-radius:99px;padding:4px 8px;margin:2px;font-size:13px}
-.modal{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;padding:15px;z-index:5}
-.modalbox{max-width:620px;width:100%;background:#191c29;border:1px solid #383c51;border-radius:20px;padding:20px}
 .end{text-align:center;padding:35px}.small{font-size:13px}
 @media(max-width:780px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.wrap{padding:9px}}
+</style>
+
+<style>
+/* iPhone/Safari controls */
+input, button { -webkit-appearance:none; appearance:none; }
+select { -webkit-appearance:auto; appearance:auto; color:#fff; background:#10121b; }
+input, select { min-height:46px; font-size:16px; }
+select {
+  color:#fff;
+  background:#10121b;
+  padding-right:11px;
+}
+input:focus,select:focus { outline:2px solid #795cff; outline-offset:1px; }
+button { -webkit-tap-highlight-color:transparent; min-height:44px; }
+@media(max-width:780px){
+  .top h1{font-size:27px}
+  .card{padding:14px}
+  .actions{display:grid;grid-template-columns:1fr 1fr}
+  .actions button{min-width:0;width:100%}
+  .choice{min-height:48px}
+  .tabs{padding-bottom:2px}
+}
+select, option { color:#fff; background-color:#10121b; }
+</style>
+
+<style>
+.picker{width:100%;text-align:left;background:#10121b;border:1px solid #383c51;color:#fff;margin:5px 0;min-height:46px}
+.picker:active{background:#25293a}
+.pick-list{display:grid;gap:8px;margin:6px 0 10px}
+.pick-option{width:100%;text-align:left;background:#25293a}
 </style>
 </head>
 <body><div class="wrap">
@@ -36,9 +64,11 @@ input,select{width:100%;padding:11px;background:#10121b;color:#fff;border:1px so
 <section id="create" class="card">
 <h2>🌱 Рождение персонажа</h2>
 <p class="muted">характер и мечта пока не выбираются — они сформируются по ходу жизни.</p>
-<input id="cname" placeholder="Имя ребёнка">
-<select id="country" onchange="updateCities()"></select>
-<select id="city"></select>
+<input id="cname" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Имя ребёнка">
+<button type="button" class="picker" id="countryPicker" onclick="togglePicker('country')">🌍 Германия</button>
+<div id="countryOptions" class="pick-list hidden"></div>
+<button type="button" class="picker" id="cityPicker" onclick="togglePicker('city')">📍 Берлин</button>
+<div id="cityOptions" class="pick-list hidden"></div>
 <select id="familyType">
 <option value="poor">Семья с небольшим доходом</option>
 <option value="middle" selected>Обычная семья</option>
@@ -73,8 +103,10 @@ input,select{width:100%;padding:11px;background:#10121b;color:#fff;border:1px so
 <div class="muted" id="date"></div><h3>📖 Что происходит</h3>
 <div class="event" id="event"></div><div id="choices"></div>
 <div class="actions" style="margin-top:12px">
-<button onclick="nextMonth()">📅 Следующий месяц</button><button class="secondary" onclick="study()">📚 Учиться</button>
-<button class="secondary" onclick="work()">💼 Работать</button><button class="secondary" onclick="relax()">🛋️ Отдохнуть</button>
+<button onclick="nextMonth()">📅 Следующий месяц</button>
+<button class="secondary" onclick="study()">📚 Учиться</button>
+<button class="secondary" onclick="work()">💼 Работать</button>
+<button class="secondary" onclick="relax()">🛋️ Отдохнуть</button>
 </div>
 </div>
 
@@ -98,216 +130,223 @@ input,select{width:100%;padding:11px;background:#10121b;color:#fff;border:1px so
 </section>
 </div>
 
-<div id="modal" class="modal hidden"><div class="modalbox"><h2 id="modalTitle"></h2><div id="modalText" class="event"></div><div id="modalButtons" class="actions"></div></div></div>
+
 
 <script>
 const world={
-"Германия":{cities:[
-["Берлин",2500,2100],["Мюнхен",2900,2300],["Гамбург",2200,1900],["Кёльн",2000,1800],["Лейпциг",1500,1300]],
-culture:"Германия: сильное образование, стабильный рынок труда и довольно дорогая недвижимость."},
-"Франция":{cities:[["Париж",3000,2400],["Лион",1900,1700],["Марсель",1800,1600],["Тулуза",1700,1500]],
-culture:"Франция: большие города дают много возможностей, но жильё в крупных центрах дорогое."},
-"США":{cities:[["Нью-Йорк",3600,3000],["Лос-Анджелес",3400,2900],["Чикаго",2300,2000],["Бостон",3000,2500]],
-culture:"США: широкий рынок профессий, заметная разница стоимости жизни между городами."},
-"Япония":{cities:[["Токио",3200,2700],["Осака",2200,1900],["Киото",2100,1800],["Саппоро",1700,1500]],
-culture:"Япония: большие города дают много возможностей, а жильё и транспорт имеют свои особенности."},
-"Канада":{cities:[["Торонто",3000,2500],["Ванкувер",3400,2800],["Монреаль",2100,1800],["Оттава",2300,1900]],
-culture:"Канада: крупные города дорогие, но есть разные образовательные и карьерные пути."}
+ "Германия":{cities:[["Берлин",2500,2100],["Мюнхен",2900,2300],["Гамбург",2200,1900],["Кёльн",2000,1800],["Лейпциг",1500,1300]],culture:"Сильное образование и большой рынок труда."},
+ "Франция":{cities:[["Париж",3000,2400],["Лион",1900,1700],["Марсель",1800,1600],["Тулуза",1700,1500]],culture:"Большие города дают много возможностей, но жильё дорогое."},
+ "США":{cities:[["Нью-Йорк",3600,3000],["Лос-Анджелес",3400,2900],["Чикаго",2300,2000],["Бостон",3000,2500]],culture:"Много профессий и большие различия в стоимости жизни."},
+ "Япония":{cities:[["Токио",3200,2700],["Осака",2200,1900],["Киото",2100,1800],["Саппоро",1700,1500]],culture:"Крупные города дают много возможностей."},
+ "Канада":{cities:[["Торонто",3000,2500],["Ванкувер",3400,2800],["Монреаль",2100,1800],["Оттава",2300,1900]],culture:"Крупные города дорогие, но возможностей много."}
 };
-const jobTable={smart:["Программист",1800],social:["Менеджер",1550],hard:["Инженер",1750],creative:["Дизайнер",1450],lucky:["Предприниматель",2000],default:["Сотрудник",1300]};
-const names=["Алекс","Мия","Лео","Софи","Ника","Макс","Эли","Дан","Лука","Лина","Марк","Алиса","Рэй","Эмма","Ирис","Том","Кира","Ян","Майя","Оскар"];
 const jobs=["Программист","Дизайнер","Врач","Учитель","Инженер","Журналист","Повар","Музыкант","Юрист","Архитектор","Менеджер","Предприниматель"];
-let S=null,saveKey="life_simulator_world_v2",currentEvent=null;
+const names=["Алекс","Мия","Лео","Софи","Ника","Макс","Эли","Дан","Лука","Лина","Марк","Алиса","Рэй","Эмма","Ирис","Том","Кира","Ян","Майя","Оскар"];
+let S=null;
+let selectedCountry="Германия",selectedCity="Берлин";
+const saveKey="life_simulator_world_v3";
 
+function el(id){return document.getElementById(id)}
 function initCreate(){
- country.innerHTML=Object.keys(world).map(x=>`<option>${x}</option>`).join("");updateCities();
+  el("countryPicker").textContent="🌍 "+selectedCountry;
+  el("cityPicker").textContent="📍 "+selectedCity;
+  renderLocationOptions();
 }
-function updateCities(){let w=world[country.value];city.innerHTML=w.cities.map(x=>`<option value="${x[0]}">${x[0]}</option>`).join("")}
+function renderLocationOptions(){
+  el("countryOptions").innerHTML=Object.keys(world).map(c=>`<button class="pick-option" type="button" onclick="chooseCountry('${c}')">${c}</button>`).join("");
+  el("cityOptions").innerHTML=world[selectedCountry].cities.map(x=>`<button class="pick-option" type="button" onclick="chooseCity('${x[0]}')">${x[0]}</button>`).join("");
+}
+function togglePicker(type){
+  const box=el(type==="country"?"countryOptions":"cityOptions");
+  box.classList.toggle("hidden");
+}
+function chooseCountry(c){
+  selectedCountry=c;
+  selectedCity=world[c].cities[0][0];
+  el("countryPicker").textContent="🌍 "+selectedCountry;
+  el("cityPicker").textContent="📍 "+selectedCity;
+  el("countryOptions").classList.add("hidden");
+  renderLocationOptions();
+}
+function chooseCity(c){
+  selectedCity=c;
+  el("cityPicker").textContent="📍 "+selectedCity;
+  el("cityOptions").classList.add("hidden");
+}
+
 function uid(){return S.nextId++}
-function createLife(){
- let cn=cname.value.trim()||"Алекс", c=country.value, ci=city.value, type=familyType.value;
- S={nextId:1,current:0,generation:1,year:2008,month:1,people:[],logs:[],deaths:0,events:0, dynastyMoney:0};
- let base=type==="poor"?250:type==="rich"?1800:800;
- let father=newPerson(randName(),30,null,{job:jobs[Math.floor(Math.random()*jobs.length)],money:base+500});
- let mother=newPerson(randName(),28,null,{job:jobs[Math.floor(Math.random()*jobs.length)],money:base+400});
- let p=newPerson(cn,0,null,{parents:[father.id,mother.id],money:0});
- S.people.find(x=>x.id===father.id).children=[p.id];S.people.find(x=>x.id===mother.id).children=[p.id];
- p.country=c;p.city=ci;p.home="Родительский дом";p.familyType=type;p.traits=[];p.dream="";S.current=p.id;
- father.partner=mother.id;mother.partner=father.id;
- S.logs.push("0 лет — 🌱 "+p.name+" родился в "+ci+", "+c+".");
- S.logs.push("0 лет — 👨‍👩‍👧 Родители: "+father.name+" и "+mother.name+".");
- document.getElementById("create").classList.add("hidden");document.getElementById("game").classList.remove("hidden");
- save();render();newEvent();
-}
-function newPerson(name,age,parent,extra={}){
- let p={id:uid(),name,age,gender:Math.random()<.5?"м":"ж",job:extra.job||"Без работы",money:extra.money||0,health:88,happy:70,energy:90,skill:10,
- country:extra.country||"",city:extra.city||"",home:"Родительский дом",car:false,business:false,parents:extra.parents||[],children:[],partner:null,married:false,alive:true,traits:[],dream:""};
- S.people.push(p);return p;
-}
+function randName(){return names[Math.floor(Math.random()*names.length)]}
 function me(){return S.people.find(p=>p.id===S.current)}
 function person(id){return S.people.find(p=>p.id===id)}
-function randName(){return names[Math.floor(Math.random()*names.length)]}
 function clamp(v){return Math.max(0,Math.min(100,v))}
 function bar(v){return Math.round(v)+'<div class="bar"><div class="fill" style="width:'+clamp(v)+'%"></div></div>'}
-function addLog(x){S.logs.push(me().age+" лет · "+monthName()+" · "+x)}
 function monthName(){return["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"][S.month-1]}
+function addLog(text){S.logs.push(me().age+" лет · "+monthName()+" · "+text)}
+function newPerson(name,age,extra={}){
+  const p={id:uid(),name,age,job:extra.job||"Без работы",money:extra.money||0,health:88,happy:70,energy:90,skill:10,
+    country:extra.country||selectedCountry,city:extra.city||selectedCity,home:"Родительский дом",car:false,business:false,
+    parents:extra.parents||[],children:[],partner:null,married:false,alive:true,traits:[],dream:""};
+  S.people.push(p);return p;
+}
+
+function createLife(){
+  const name=el("cname").value.trim()||"Алекс";
+  const type=el("familyType").value;
+  S={nextId:1,current:null,generation:1,year:2008,month:1,people:[],logs:[],deaths:0,events:0};
+  const base=type==="poor"?250:type==="rich"?1800:800;
+  const father=newPerson(randName(),30,{job:jobs[Math.floor(Math.random()*jobs.length)],money:base+500});
+  const mother=newPerson(randName(),28,{job:jobs[Math.floor(Math.random()*jobs.length)],money:base+400});
+  father.partner=mother.id;mother.partner=father.id;
+  const child=newPerson(name,0,{parents:[father.id,mother.id],money:0});
+  child.country=selectedCountry;child.city=selectedCity;child.familyType=type;
+  father.children=[child.id];mother.children=[child.id];
+  S.current=child.id;
+  S.logs.push("0 лет — 🌱 "+child.name+" родился в "+child.city+", "+child.country+".");
+  S.logs.push("0 лет — 👨‍👩‍👧 Родители: "+father.name+" и "+mother.name+".");
+  el("create").classList.add("hidden");el("game").classList.remove("hidden");
+  save();render();newEvent();
+}
+
 function render(){
- let p=me();if(!p)return;
- who.textContent=p.name;age.textContent=p.age+" лет";place.textContent=p.city+", "+p.country;money.textContent=Math.round(p.money);job.textContent=p.job;home.textContent=p.home;dream.textContent=p.dream||"ещё не выбрана";
- health.innerHTML=bar(p.health);happy.innerHTML=bar(p.happy);energy.innerHTML=bar(p.energy);skill.innerHTML=bar(p.skill);
- traits.innerHTML=p.traits.map(t=>`<span class="pill">${t}</span>`).join("");
- date.textContent=monthName()+" "+S.year;
- let par=p.partner?person(p.partner):null;
- relations.innerHTML=(par?`<div class="person">❤️ ${par.name}<span>${p.married?"супруг":"партнёр"}</span></div>`:"")+p.children.map(id=>{let c=person(id);return c?`<div class="person">👶 ${c.name}<span>${c.age} лет</span></div>`:""}).join("")||"<div class='muted'>пока никого</div>";
- dynasty.innerHTML=`<p>🌳 Поколение: <b>${S.generation}</b></p><p>👥 Родственников: <b>${S.people.length}</b></p><p>👶 Потомков: <b>${countDesc(p.id)}</b></p><p>⚰️ Смертей: <b>${S.deaths}</b></p><p>🎲 Событий: <b>${S.events}</b></p>`;
- log.innerHTML=S.logs.slice().reverse().map(x=>`<div>${x}</div>`).join("");
- familyView.innerHTML=familyHTML(p);cityInfo.textContent=world[p.country]?.culture||"";
- cities.innerHTML=world[p.country]?.cities.map(x=>`<div class="person"><span>📍 ${x[0]}</span><button onclick="moveCity('${x[0]}')">Переехать · ${x[1]}€</button></div>`).join("")||"";
- treeView.innerHTML=S.people.map(p=>`<div class="node">${p.alive?"👤":"⚰️"} ${p.name}<br><span class="small">${p.age} лет</span></div>`).join(" → ");
- stuffView.innerHTML=`<p>🏠 ${p.home}</p><p>🚗 ${p.car?"есть":"нет"}</p><p>🏪 ${p.business?"есть бизнес":"нет бизнеса"}</p><p>💶 ${Math.round(p.money)}€</p>`;
+  const p=me();if(!p)return;
+  el("who").textContent=p.name;
+  el("age").textContent=p.age+" лет";
+  el("place").textContent=p.city+", "+p.country;
+  el("money").textContent=Math.round(p.money);
+  el("job").textContent=p.job;
+  el("home").textContent=p.home;
+  el("dream").textContent=p.dream||"ещё не выбрана";
+  el("health").innerHTML=bar(p.health);el("happy").innerHTML=bar(p.happy);el("energy").innerHTML=bar(p.energy);el("skill").innerHTML=bar(p.skill);
+  el("traits").innerHTML=p.traits.map(t=>`<span class="pill">${t}</span>`).join("");
+  el("date").textContent=monthName()+" "+S.year;
+  const partner=p.partner?person(p.partner):null;
+  el("relations").innerHTML=(partner?`<div class="person">❤️ ${partner.name}<span>${p.married?"супруг":"партнёр"}</span></div>`:"")+
+    p.children.map(id=>{const c=person(id);return c?`<div class="person">👶 ${c.name}<span>${c.age} лет</span></div>`:""}).join("")||"<div class='muted'>пока никого</div>";
+  el("dynasty").innerHTML=`<p>🌳 Поколение: <b>${S.generation}</b></p><p>👥 Родственников: <b>${S.people.length}</b></p><p>👶 Потомков: <b>${countDesc(p.id)}</b></p><p>⚰️ Смертей: <b>${S.deaths}</b></p><p>🎲 Событий: <b>${S.events}</b></p>`;
+  el("log").innerHTML=S.logs.slice().reverse().map(x=>`<div>${x}</div>`).join("");
+  renderFamily(p);renderCity(p);renderTree();renderStuff(p);
 }
-function familyHTML(p){
- let parents=p.parents.map(person).filter(Boolean);
- let par=p.partner?person(p.partner):null;
- return (parents.length?`<h3>👨‍👩‍👧 Родители</h3>${parents.map(x=>`<div class="person">👤 ${x.name}<span>${x.age} лет</span></div>`).join("")}`:"")+
- (par?`<h3>❤️ ${p.married?"Супруг":"Партнёр"}</h3><div class="person">💞 ${par.name}<span>${par.age} лет</span></div>`:"")+
- `<h3>👶 Дети (${p.children.length})</h3>`+(p.children.length?p.children.map(id=>{let c=person(id);return `<div class="person">👶 ${c.name}<span>${c.age} лет</span></div>`}).join(""):"<div class='muted'>детей пока нет</div>");
+function renderFamily(p){
+  const parents=p.parents.map(person).filter(Boolean);
+  const partner=p.partner?person(p.partner):null;
+  el("familyView").innerHTML=(parents.length?`<h3>👨‍👩‍👧 Родители</h3>${parents.map(x=>`<div class="person">👤 ${x.name}<span>${x.age} лет</span></div>`).join("")}`:"")+
+  (partner?`<h3>❤️ ${p.married?"Супруг":"Партнёр"}</h3><div class="person">💞 ${partner.name}<span>${partner.age} лет</span></div>`:"")+
+  `<h3>👶 Дети (${p.children.length})</h3>`+(p.children.length?p.children.map(id=>{const c=person(id);return `<div class="person">👶 ${c.name}<span>${c.age} лет</span></div>`}).join(""):"<div class='muted'>детей пока нет</div>");
 }
-function countDesc(id){let n=0;function f(x){(x?.children||[]).forEach(cid=>{n++;f(person(cid))})}f(person(id));return n}
-function tab(id){document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));document.getElementById(id).classList.remove("hidden")}
-function eventText(){let p=me();let pool=[];
- if(p.age<6)pool=[
- ["🧸 Сегодня в садике другой ребёнок отдал тебе свою игрушку.\\nТы впервые замечаешь, как приятно делиться.",["🤝 Подружиться","😊 Поблагодарить и уйти"],["friend","happy"]],
- ["🏠 Родители решили устроить семейный выходной.\\nВы можете поехать в парк или остаться дома.",["🌳 Поехать в парк","🏠 Остаться дома"],["happy","rest"]]
- ];
- else if(p.age<13)pool=[
- ["🏫 В школе объявили конкурс. Учитель говорит, что у тебя есть шанс.",["🏆 Участвовать","🙈 Не участвовать"],["skill","safe"]],
- ["👋 Одноклассник предлагает стать друзьями.\\nВы можете попробовать узнать друг друга.",["🤝 Согласиться","🙂 Остаться одному"],["friend","alone"]],
- ["🎨 Ты неожиданно увлёкся новым хобби.",["🎨 Продолжать","🤷 Забросить"],["hobby","none"]]
- ];
- else if(p.age<18)pool=[
- ["🎉 Тебя пригласили на вечеринку.\\nНо завтра важная контрольная.",["🎉 Пойти","📚 Остаться и учиться"],["party","study"]],
- ["💬 Твой близкий друг признаётся, что хочет переехать в другой город.",["❤️ Поддержать","😕 Попробовать отговорить"],["friend","conflict"]],
- ["🎓 Нужно решить, чем заниматься после школы.",["🎓 Серьёзно учиться","🎨 Развивать хобби"],["study","hobby"]]
- ];
- else pool=[
- ["💼 На работе появился шанс перейти на новую должность.\\nОтвет нужно дать сегодня.",["📈 Согласиться","🧘 Остаться на прежнем месте"],["promotion","safe"]],
- ["❤️ Ты встречаешь человека, с которым неожиданно легко разговаривать.",["☕ Познакомиться ближе","👋 Просто попрощаться"],["romance","none"]],
- ["💸 Пришёл большой неожиданный счёт.",["💳 Заплатить","📞 Договориться об отсрочке"],["pay","negotiate"]],
- ["✈️ Появилась возможность на несколько месяцев уехать в другой город.",["🌍 Уехать","🏠 Остаться"],["travel","stay"]],
- ["👨‍👩‍👧 Родственнику нужна помощь.",["❤️ Помочь","💶 Отказать ради денег"],["help","money"]],
- ["🏪 У тебя появилась идея для собственного дела.",["🚀 Попробовать","🧑‍💼 Остаться на работе"],["business","job"]]
- ];
- return pool[Math.floor(Math.random()*pool.length)]
+function renderCity(p){
+  el("cityInfo").textContent=(world[p.country]?.culture||"")+" Сейчас: "+p.city+".";
+  el("cities").innerHTML=world[p.country].cities.map(x=>`<div class="person"><span>📍 ${x[0]}</span><button onclick="moveCity('${x[0]}')">Переехать · ${x[1]}€</button></div>`).join("");
 }
-function newEvent(){let e=eventText();currentEvent=e;event.textContent=e[0];choices.innerHTML=e[1].map((x,i)=>`<button class="choice" onclick="chooseEvent(${i})">${x}</button>`).join("")}
+function renderTree(){
+  el("treeView").innerHTML=S.people.map(p=>`<div class="node">${p.alive?"👤":"⚰️"} ${p.name}<br><span class="small">${p.age} лет</span></div>`).join(" → ");
+}
+function renderStuff(p){
+  el("stuffView").innerHTML=`<p>🏠 ${p.home}</p><p>🚗 ${p.car?"есть":"нет"}</p><p>🏪 ${p.business?"есть бизнес":"нет бизнеса"}</p><p>💶 ${Math.round(p.money)}€</p>`;
+}
+function countDesc(id){let n=0;function walk(x){(x?.children||[]).forEach(cid=>{n++;walk(person(cid))})}walk(person(id));return n}
+function tab(id){document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));el(id).classList.remove("hidden")}
+
+const eventPool=[
+ ["🏫 В школе объявили конкурс. Учитель говорит, что у тебя есть шанс.",["🏆 Участвовать","🙈 Не участвовать"],["skill","safe"],6,12],
+ ["👋 Одноклассник предлагает дружить.",["🤝 Согласиться","🙂 Остаться одному"],["friend","alone"],6,12],
+ ["🎨 Ты неожиданно увлёкся новым хобби.",["🎨 Продолжать","🤷 Забросить"],["hobby","none"],6,18],
+ ["🎉 Тебя пригласили на вечеринку, но завтра контрольная.",["🎉 Пойти","📚 Учиться"],["party","study"],13,18],
+ ["💬 Близкий друг говорит, что хочет переехать.",["❤️ Поддержать","😕 Отговорить"],["friend","conflict"],13,25],
+ ["💼 На работе появился шанс на повышение.",["📈 Согласиться","🧘 Остаться"],["promotion","safe"],18,80],
+ ["❤️ Ты встречаешь человека, с которым легко разговаривать.",["☕ Познакомиться","👋 Попрощаться"],["romance","none"],18,80],
+ ["💸 Пришёл неожиданный большой счёт.",["💳 Заплатить","📞 Договориться"],["pay","negotiate"],18,90],
+ ["✈️ Появилась возможность временно уехать в другой город.",["🌍 Уехать","🏠 Остаться"],["travel","stay"],18,80],
+ ["👨‍👩‍👧 Родственнику нужна помощь.",["❤️ Помочь","💶 Отказать"],["help","money"],18,90],
+ ["🏪 У тебя появилась идея для бизнеса.",["🚀 Попробовать","🧑‍💼 Остаться на работе"],["business","job"],18,90]
+];
+let currentEvent=null;
+function newEvent(){
+  const p=me();
+  let pool=eventPool.filter(e=>p.age>=e[3]&&p.age<=e[4]);
+  if(!pool.length)pool=[["🌱 Сегодня ничего необычного не произошло. Ты просто прожил ещё один день.",["😊 Насладиться спокойствием","📚 Заняться делами"],["happy","study"],0,100]];
+  currentEvent=pool[Math.floor(Math.random()*pool.length)];
+  el("event").textContent=currentEvent[0];
+  el("choices").innerHTML=currentEvent[1].map((x,i)=>`<button class="choice" onclick="chooseEvent(${i})">${x}</button>`).join("");
+}
 function chooseEvent(i){
- let p=me(),type=currentEvent[2][i];S.events++;
- if(type==="friend"){p.happy+=7;addLog("🤝 Завёл важное знакомство.")}
- if(type==="happy"||type==="party"){p.happy+=10;p.energy-=5;addLog("🎉 Провёл время с людьми.")}
- if(type==="rest"){p.energy+=10;p.happy+=3;addLog("🌿 Провёл спокойный день с семьёй.")}
- if(type==="skill"){p.skill+=8;addLog("🏆 Попробовал себя в новом деле.")}
- if(type==="alone"){p.happy-=4;addLog("🌙 Предпочёл побыть один.")}
- if(type==="hobby"){p.skill+=5;addLog("🎨 Развивал своё увлечение.");if(p.age>=13&&Math.random()<.3)gainTrait(p,"творческий")}
- if(type==="study"){p.skill+=9;p.happy-=2;addLog("📚 Сделал упор на учёбу.");if(p.age>=15&&Math.random()<.25)gainTrait(p,"целеустремлённый")}
- if(type==="romance"){meetSomeone();return}
- if(type==="promotion"){p.money+=500;p.skill+=5;p.job=p.job==="Без работы"?randomJob():p.job+" · повышение";addLog("📈 Получил повышение.")}
- if(type==="pay"){p.money-=400;p.happy-=4;addLog("💸 Оплатил неожиданный счёт.")}
- if(type==="negotiate"){p.money-=80;addLog("📞 Договорился об отсрочке платежа.")}
- if(type==="travel"){p.money-=350;p.happy+=12;addLog("✈️ Временно уехал в другой город.")}
- if(type==="stay"){p.skill+=3;addLog("🏠 Остался и продолжил привычную жизнь.")}
- if(type==="help"){p.money-=150;p.happy+=12;addLog("❤️ Помог родственнику.")}
- if(type==="money"){p.money+=150;p.happy-=5;addLog("💶 Решил сохранить деньги.")}
- if(type==="business"){if(p.money>=1200){p.money-=1200;p.business=true;addLog("🏪 Начал маленький бизнес.")}else addLog("🏪 Не хватило денег на бизнес.")}
- if(type==="job"){p.skill+=2;p.money+=100;addLog("💼 Продолжил карьеру.")}
- if(type==="conflict"){p.happy-=6;addLog("💬 Разговор оказался непростым.")}
- if(type==="none"){addLog("🌙 Решил ничего не менять.")}
- if(type==="safe"){p.energy+=3;addLog("🧘 Оставил всё как есть.")}
- if(p.age>=6&&p.age<18&&Math.random()<.18)gainTrait(p,["общительный","упорный","спокойный","смелый"][Math.floor(Math.random()*4)]);
- choices.innerHTML="";render();save();
+  const p=me(),t=currentEvent[2][i];S.events++;
+  if(t==="skill"){p.skill+=8;addLog("🏆 Попробовал себя в новом деле.")}
+  if(t==="friend"){p.happy+=7;addLog("🤝 Завёл важное знакомство.")}
+  if(t==="happy"){p.happy+=8;addLog("😊 Насладился спокойным днём.")}
+  if(t==="party"){p.happy+=10;p.energy-=5;addLog("🎉 Повеселился с друзьями.")}
+  if(t==="study"){p.skill+=8;p.energy-=8;addLog("📚 Сделал упор на учёбу.")}
+  if(t==="hobby"){p.skill+=5;addLog("🎨 Развивал хобби.")}
+  if(t==="promotion"){p.money+=500;p.skill+=5;p.job=p.job==="Без работы"?jobs[Math.floor(Math.random()*jobs.length)]:p.job+" · повышение";addLog("📈 Получил повышение.")}
+  if(t==="romance"){meetSomeone();return}
+  if(t==="pay"){p.money-=400;addLog("💸 Оплатил неожиданный счёт.")}
+  if(t==="negotiate"){p.money-=80;addLog("📞 Договорился об отсрочке.")}
+  if(t==="travel"){p.money-=350;p.happy+=12;addLog("✈️ Временно уехал в другой город.")}
+  if(t==="stay"){p.skill+=3;addLog("🏠 Остался дома.")}
+  if(t==="help"){p.money-=150;p.happy+=12;addLog("❤️ Помог родственнику.")}
+  if(t==="money"){p.money+=150;p.happy-=5;addLog("💶 Сохранил деньги.")}
+  if(t==="business"){if(p.money>=1200){p.money-=1200;p.business=true;addLog("🏪 Начал маленький бизнес.")}else addLog("🏪 Не хватило денег на бизнес.")}
+  if(t==="job"){p.money+=100;addLog("💼 Продолжил карьеру.")}
+  if(t==="conflict"){p.happy-=6;addLog("💬 Разговор оказался непростым.")}
+  if(t==="alone"){p.happy-=3;addLog("🌙 Предпочёл побыть один.")}
+  if(t==="safe"){p.energy+=3;addLog("🧘 Оставил всё как есть.")}
+  if(t==="none"){addLog("🌙 Решил ничего не менять.")}
+  el("choices").innerHTML="";render();save();
 }
-function gainTrait(p,t){if(!p.traits.includes(t)){p.traits.push(t);addLog("🧠 У тебя сформировалась черта: "+t+".")}}
-function randomJob(){return jobs[Math.floor(Math.random()*jobs.length)]}
-function study(){let p=me();if(p.age<5){addLog("🧸 Ты ещё слишком мал для учёбы.");render();return}p.skill+=6;p.energy-=10;p.happy-=1;addLog("📚 Учился.");if(p.age>=13&&Math.random()<.12)gainTrait(p,"умный");render();save()}
-function work(){let p=me();if(p.age<14){addLog("🧒 Ты пока не работаешь.");render();return}if(p.job==="Без работы")p.job=randomJob();let pay=700+p.skill*12;p.money+=pay;p.energy-=15;p.skill+=2;addLog("💼 Поработал и получил "+Math.round(pay)+"€.");render();save()}
-function relax(){let p=me();p.energy=clamp(p.energy+15);p.happy=clamp(p.happy+9);p.health=clamp(p.health+2);addLog("🛋️ Хорошо отдохнул.");render();save()}
+
+function study(){const p=me();if(p.age<5){addLog("🧸 Ты ещё слишком мал.");render();return}p.skill+=6;p.energy-=10;addLog("📚 Учился.");render();save()}
+function work(){const p=me();if(p.age<14){addLog("🧒 Ты пока не работаешь.");render();return}if(p.job==="Без работы")p.job=jobs[Math.floor(Math.random()*jobs.length)];const pay=700+p.skill*12;p.money+=pay;p.energy-=15;p.skill+=2;addLog("💼 Поработал и получил "+Math.round(pay)+"€.");render();save()}
+function relax(){const p=me();p.energy=clamp(p.energy+15);p.happy=clamp(p.happy+9);p.health=clamp(p.health+2);addLog("🛋️ Хорошо отдохнул.");render();save()}
+
 function meetSomeone(){
- let p=me();if(p.age<15){addLog("❤️ Пока только дружба и новые знакомства.");render();return}
+ const p=me();if(p.age<15){addLog("❤️ Пока новые знакомства остаются дружескими.");render();return}
  if(p.partner){addLog("❤️ Ты уже в отношениях.");render();return}
- let n=randName(),q=newPerson(n,p.age,null,{country:p.country,city:p.city,job:p.age>=18?randomJob():"Без работы",money:400});
- q.traits=["общительный"];p.partner=q.id;p.happy+=12;addLog("❤️ Познакомился с "+n+". Отношения начались.");render();save()
+ const q=newPerson(randName(),p.age,{country:p.country,city:p.city,job:p.age>=18?jobs[Math.floor(Math.random()*jobs.length)]:"Без работы",money:500});
+ p.partner=q.id;q.partner=p.id;p.happy+=12;addLog("❤️ Познакомился с "+q.name+".");render();save()
 }
-function marry(){let p=me();if(!p.partner){alert("Сначала нужно с кем-то познакомиться.");return}if(p.age<18){alert("До совершеннолетия свадьба недоступна.");return}p.married=true;p.happy+=15;addLog("💍 Сыграли свадьбу.");render();save()}
-function divorce(){let p=me();if(!p.partner){alert("Сейчас не с кем расставаться.");return}let q=person(p.partner);p.partner=null;p.married=false;if(q){q.partner=null;q.married=false}p.happy-=10;addLog("💔 Отношения закончились.");render();save()}
-function haveChild(){
- let p=me();if(!p.partner||!p.married){alert("Для рождения ребёнка нужны партнёр и брак.");return}
- if(p.age<18||p.age>48){alert("Сейчас это событие недоступно.");return}
- let n=randName(),c=newPerson(n,0,p.id,{country:p.country,city:p.city});c.parents=[p.id,p.partner];p.children.push(c.id);person(p.partner).children.push(c.id);p.money-=250;p.happy+=15;addLog("👶 Родился ребёнок — "+n+".");render();save()
-}
-function moveCity(target){
- let p=me(),info=world[p.country].cities.find(x=>x[0]===target);if(!info||target===p.city)return;
- if(p.money<info[1]){alert("Не хватает денег на переезд.");return}
- p.money-=info[1];p.city=target;p.home="Съёмное жильё";p.happy+=5;addLog("🌆 Переехал в "+target+".");render();save()
-}
-function buyHome(){let p=me(),price=cityPrice(p.city);if(p.money<price){alert("Нужно "+price+"€.");return}p.money-=price;p.home="Собственный дом в "+p.city;addLog("🏠 Купил жильё.");render();save()}
-function cityPrice(c){for(let k of Object.values(world))for(let x of k.cities)if(x[0]===c)return x[2];return 1800}
-function buyCar(){let p=me();if(p.car){alert("Машина уже есть.");return}if(p.money<1200){alert("Нужно 1200€.");return}p.money-=1200;p.car=true;addLog("🚗 Купил машину.");render();save()}
-function startBusiness(){let p=me();if(p.business){alert("Бизнес уже есть.");return}if(p.money<3000){alert("Нужно 3000€.");return}p.money-=3000;p.business=true;addLog("🏪 Открыл собственный бизнес.");render();save()}
+function marry(){const p=me();if(!p.partner){alert("Сначала нужны отношения.");return}if(p.age<18){alert("До 18 лет свадьба недоступна.");return}p.married=true;p.happy+=15;addLog("💍 Сыграли свадьбу.");render();save()}
+function divorce(){const p=me();if(!p.partner){alert("Сейчас не с кем расставаться.");return}const q=person(p.partner);p.partner=null;p.married=false;if(q){q.partner=null;q.married=false}p.happy-=10;addLog("💔 Отношения закончились.");render();save()}
+function haveChild(){const p=me();if(!p.partner||!p.married){alert("Для ребёнка нужны партнёр и брак.");return}if(p.age<18||p.age>48){alert("Сейчас это недоступно.");return}const c=newPerson(randName(),0,{country:p.country,city:p.city,parents:[p.id,p.partner]});p.children.push(c.id);person(p.partner).children.push(c.id);p.money-=250;p.happy+=15;addLog("👶 Родился ребёнок — "+c.name+".");render();save()}
+
+function moveCity(target){const p=me(),info=world[p.country].cities.find(x=>x[0]===target);if(!info||target===p.city)return;if(p.money<info[1]){alert("Не хватает денег.");return}p.money-=info[1];p.city=target;p.home="Съёмное жильё";p.happy+=5;addLog("🌆 Переехал в "+target+".");render();save()}
+function cityPrice(c){for(const w of Object.values(world))for(const x of w.cities)if(x[0]===c)return x[2];return 1800}
+function buyHome(){const p=me(),price=cityPrice(p.city);if(p.money<price){alert("Нужно "+price+"€.");return}p.money-=price;p.home="Собственный дом в "+p.city;addLog("🏠 Купил жильё.");render();save()}
+function buyCar(){const p=me();if(p.car){alert("Машина уже есть.");return}if(p.money<1200){alert("Нужно 1200€.");return}p.money-=1200;p.car=true;addLog("🚗 Купил машину.");render();save()}
+function startBusiness(){const p=me();if(p.business){alert("Бизнес уже есть.");return}if(p.money<3000){alert("Нужно 3000€.");return}p.money-=3000;p.business=true;addLog("🏪 Открыл бизнес.");render();save()}
+
 function nextMonth(){
- let p=me();if(!p.alive)return;
- S.month++;if(S.month>12){S.month=1;S.year++;ageEveryone();annual();}
- // passive life
- p.energy-=2;if(p.business)p.money+=500;if(p.job!=="Без работы"&&p.age>=18)p.money+=Math.round(400+p.skill*3);
- if(Math.random()<.08)p.health-=3;
+ const p=me();if(!p||!p.alive)return;
+ S.month++;
+ if(S.month>12){S.month=1;S.year++;ageEveryone()}
+ p.energy-=2;
+ if(p.job!=="Без работы"&&p.age>=18)p.money+=Math.round(400+p.skill*3);
+ if(p.business)p.money+=500;
  if(p.energy<15)p.health-=2;
+ if(Math.random()<.08)p.health-=3;
  render();newEvent();save();
 }
 function ageEveryone(){
- let p=me();p.age++;
+ const p=me();p.age++;
  S.people.filter(x=>x.alive&&x.id!==p.id).forEach(x=>{x.age++;if(x.job!=="Без работы"&&x.age>=18)x.money+=Math.round(300+x.skill*2);if(x.age>75)x.health-=3});
- // childhood development
- if(p.age===3)gainTrait(p,["любознательный","спокойный","общительный"][Math.floor(Math.random()*3)]);
  if(p.age===6)addLog("🏫 Ты пошёл в школу.");
- if(p.age===13){addLog("🧑 Ты стал подростком.");if(!p.dream)p.dream="Найти своё призвание";}
- if(p.age===18){addLog("🎓 Тебе исполнилось 18. Теперь ты сам решаешь, куда двигаться.");if(!p.dream)p.dream=randomDream()}
- if(p.age===25&&p.traits.includes("творческий"))p.dream="Создать что-то, что запомнят";
- if(p.age===30&&p.partner&&!p.married){addLog("💬 Отношения начинают требовать серьёзного решения.");}
- // adult children can form their own families
- S.people.filter(x=>x.alive&&x.age>=20&&x.age<=38&&x.partner===null&&Math.random()<.12).forEach(x=>{
-   if(x.id!==p.id){let q=newPerson(randName(),x.age,null,{country:x.country,city:x.city,job:randomJob(),money:500});x.partner=q.id;q.partner=x.id;}
- });
- // older relatives can die
- S.people.filter(x=>x.alive&&x.age>=78).forEach(x=>{if(Math.random()<.1)die(x)});
+ if(p.age===13)addLog("🧑 Ты стал подростком.");
+ if(p.age===18){addLog("🎓 Тебе исполнилось 18. Теперь ты сам решаешь, куда двигаться.");p.dream=randomDream()}
+ if(p.age>=18&&p.job==="Без работы")p.job=jobs[Math.floor(Math.random()*jobs.length)];
+ if(p.age>=65)p.health-=2;
+ S.people.filter(x=>x.alive&&x.age>=20&&x.age<=38&&!x.partner&&Math.random()<.1).forEach(x=>{if(x.id!==p.id){const q=newPerson(randName(),x.age,{country:x.country,city:x.city,job:jobs[Math.floor(Math.random()*jobs.length)],money:500});x.partner=q.id;q.partner=x.id}});
+ S.people.filter(x=>x.alive&&x.age>=78&&Math.random()<.1).forEach(die);
  if(p.health<=0||p.age>=95)die(p);
 }
-function annual(){
- let p=me();if(p.job==="Без работы"&&p.age>=18)p.job=randomJob();
- if(p.job!=="Без работы"&&p.age>=18)p.money+=jobs[p.trait]?.[1]||900;
- if(p.age>=18&&p.dream==="")p.dream=randomDream();
- if(p.age>=65)p.health-=2;
- if(p.age>=80)addLog("👵 Старость всё сильнее меняет твою жизнь.");
-}
-function randomDream(){return["Купить большой дом","Создать счастливую семью","Стать богатым","Построить карьеру","Путешествовать по миру","Открыть собственный бизнес","Создать что-то важное"][Math.floor(Math.random()*7)]}
-function die(p){
- if(!p.alive)return;p.alive=false;S.deaths++;S.dynastyMoney+=Math.max(0,p.money);S.logs.push(p.age+" лет · ⚰️ "+p.name+" умер.");
- if(p.partner){let q=person(p.partner);if(q)q.partner=null}
- if(p.id===S.current){showHeirs()}
-}
+function randomDream(){return["Купить большой дом","Создать счастливую семью","Стать богатым","Построить карьеру","Путешествовать по миру","Открыть бизнес"][Math.floor(Math.random()*6)]}
+function die(p){if(!p.alive)return;p.alive=false;S.deaths++;S.logs.push(p.age+" лет · ⚰️ "+p.name+" умер.");if(p.partner){const q=person(p.partner);if(q)q.partner=null}if(p.id===S.current)showHeirs()}
 function showHeirs(){
- let p=me(),kids=p.children.map(person).filter(x=>x&&x.alive&&x.age>=18);
- if(!kids.length){game.innerHTML=`<div class="card end"><h1>🌅 Династия завершена</h1><p>У ${p.name} не осталось взрослых детей-наследников.</p><button onclick="newDynasty()">Начать новую династию</button></div>`;return}
- game.innerHTML=`<div class="card end"><div style="font-size:60px">⚰️</div><h1>${p.name} умер</h1><p>Выбери взрослого потомка, за которого продолжишь жизнь.</p><div id="heirs"></div></div>`;
- heirs.innerHTML=kids.map(k=>`<button style="margin:5px" onclick="continueAs(${k.id})">👤 ${k.name} · ${k.age} лет · ${k.city}</button>`).join("");
+ const p=me(),kids=p.children.map(person).filter(x=>x&&x.alive&&x.age>=18);
+ if(!kids.length){el("game").innerHTML=`<div class="card end"><h1>🌅 Династия завершена</h1><p>У ${p.name} не осталось взрослых наследников.</p><button onclick="newDynasty()">Начать новую династию</button></div>`;return}
+ el("game").innerHTML=`<div class="card end"><div style="font-size:60px">⚰️</div><h1>${p.name} умер</h1><p>Выбери взрослого ребёнка, за которого продолжишь жизнь.</p><div id="heirs"></div></div>`;
+ el("heirs").innerHTML=kids.map(k=>`<button style="margin:5px" onclick="continueAs(${k.id})">👤 ${k.name} · ${k.age} лет</button>`).join("");
 }
-function continueAs(id){
- S.current=id;S.generation++;let p=me();if(p.money<100)p.money=100;save();location.reload()
-}
+function continueAs(id){S.current=id;S.generation++;save();location.reload()}
 function save(){localStorage.setItem(saveKey,JSON.stringify(S))}
-function load(){
- try{let raw=localStorage.getItem(saveKey);if(!raw)return;S=JSON.parse(raw);if(!S||!S.people?.length)return;
- create.classList.add("hidden");game.classList.remove("hidden");render();newEvent()
- }catch(e){}
-}
-function newDynasty(){if(confirm("Начать новую династию? Текущая сохранённая игра будет удалена.")){localStorage.removeItem(saveKey);location.reload()}}
+function load(){try{const raw=localStorage.getItem(saveKey);if(!raw)return;S=JSON.parse(raw);if(!S?.people?.length)return;el("create").classList.add("hidden");el("game").classList.remove("hidden");render();newEvent()}catch(e){localStorage.removeItem(saveKey)}}
+function newDynasty(){if(confirm("Начать новую династию?")){localStorage.removeItem(saveKey);location.reload()}}
 initCreate();load();
 </script></body></html>
